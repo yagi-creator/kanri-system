@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="塾入金管理">
-    <title>塾入金管理システム v2.5a</title>
+    <title>塾入金管理システム v2.6 完成版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
@@ -756,6 +756,32 @@
             margin-left: 8px;
             font-weight: bold;
         }
+
+        .history-row-server {
+            background-color: #ffffff;
+        }
+
+        .history-row-local {
+            background-color: #f0f8ff;
+        }
+
+        .history-source-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .history-source-server {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .history-source-local {
+            background: #fff3e0;
+            color: #f57c00;
+        }
     </style>
 </head>
 <body>
@@ -763,7 +789,7 @@
 
     <div id="loginScreen" class="login-container">
         <div class="login-box">
-            <h2>塾入金管理システム v2.5a</h2>
+            <h2>塾入金管理システム v2.6 完成版</h2>
             <div class="form-group">
                 <label for="username">ユーザーID</label>
                 <input type="text" id="username" placeholder="ユーザーIDを入力">
@@ -781,9 +807,9 @@
         <div class="container">
             <div class="header">
                 <div>
-                    <h1>塾入金管理システム v2.5a <span class="feature-badge">CORS完全対応</span></h1>
-                    <div class="version-info">Apps Script連携・完全削除機能・自動初期化搭載版</div>
-                    <div id="lastSyncInfo" style="font-size: 13px; opacity: 0.9; margin-top: 4px;">最終同期: -</div>
+                    <h1>塾入金管理システム v2.6 <span class="feature-badge">完成版</span></h1>
+                    <div class="version-info">最終更新表示・サーバー履歴・Gmail通知対応版</div>
+                    <div id="lastSyncInfo" style="font-size: 13px; opacity: 0.9; margin-top: 4px;">最終データ更新: -</div>
                 </div>
                 <div class="user-info">
                     <div id="currentUserName" style="font-weight: bold; font-size: 16px;"></div>
@@ -815,7 +841,7 @@
             </div>
 
             <div id="settingsPanel" class="settings-panel">
-                <h3>Google 連携設定 <span class="feature-badge">CORS対応</span></h3>
+                <h3>Google 連携設定 <span class="feature-badge">完全対応</span></h3>
                 <div class="settings-row">
                     <label>接続URL:</label>
                     <input type="text" id="sheetsUrl" placeholder="Apps Script WebアプリURL または CSV公開URL">
@@ -988,6 +1014,7 @@
                             <th>項目</th>
                             <th>変更前</th>
                             <th>変更後</th>
+                            <th>ソース</th>
                         </tr>
                     </thead>
                     <tbody id="historyTableBody"></tbody>
@@ -998,9 +1025,10 @@
 
     <script>
         // ========================================
-        // v2.4機能: 文字化け対策・高度データパース
+        // v2.6完成版: 3つの改善統合実装
         // ========================================
 
+        // 文字化け対策・高度データパース
         async function fetchCsvWithEncoding(url) {
             try {
                 const response = await fetch(url);
@@ -1234,6 +1262,208 @@
             return /https:\/\/script\.google\.com\/macros\/s\/.+\/exec/i.test(url);
         }
 
+        // ========================================
+        // 改善1: 最終データ更新時刻の表示
+        // ========================================
+
+        function updateLastModifiedInfo() {
+            const lastSyncInfoElement = document.getElementById('lastSyncInfo');
+            if (!lastSyncInfoElement) return;
+
+            if (!allData || allData.length === 0) {
+                lastSyncInfoElement.textContent = '最終データ更新: データなし';
+                return;
+            }
+            
+            // 有効な更新時刻を持つレコードから最新時刻を取得
+            const lastModified = allData.reduce((latest, record) => {
+                if (!record.lastUpdated) return latest;
+                
+                const recordTime = new Date(record.lastUpdated);
+                if (isNaN(recordTime.getTime())) return latest;
+                
+                return recordTime > latest ? recordTime : latest;
+            }, new Date('1900-01-01'));
+            
+            // 有効な更新時刻が見つからない場合
+            if (lastModified.getTime() === new Date('1900-01-01').getTime()) {
+                lastSyncInfoElement.textContent = '最終データ更新: 不明';
+                return;
+            }
+            
+            // 現在時刻との差分を計算して表示を調整
+            const now = new Date();
+            const diffMinutes = Math.floor((now - lastModified) / (1000 * 60));
+            
+            let displayText = `最終データ更新: ${lastModified.toLocaleString('ja-JP', {
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            })}`;
+            
+            // 更新からの経過時間を併記
+            if (diffMinutes < 60) {
+                displayText += ` (${diffMinutes}分前)`;
+            } else if (diffMinutes < 1440) {
+                displayText += ` (${Math.floor(diffMinutes / 60)}時間前)`;
+            } else {
+                displayText += ` (${Math.floor(diffMinutes / 1440)}日前)`;
+            }
+            
+            lastSyncInfoElement.textContent = displayText;
+        }
+
+        // ========================================
+        // 改善2: サーバー履歴取得機能
+        // ========================================
+
+        async function showHistory(schoolName, customerCode = '') {
+            currentHistorySchool = schoolName;
+            let serverHistory = [];
+            let localHistory = [];
+            
+            try {
+                // ローカル履歴を読み込み
+                const savedHistory = localStorage.getItem('editHistory');
+                if (savedHistory) {
+                    localHistory = JSON.parse(savedHistory).filter(h => h.schoolName === schoolName);
+                }
+                
+                const apiUrl = document.getElementById('sheetsUrl').value.trim();
+                
+                // Apps Script URLが設定されている場合のみサーバーから取得
+                if (isAppsScriptUrl(apiUrl)) {
+                    const record = allData.find(r => r.schoolName === schoolName);
+                    const targetCustomerCode = customerCode || (record ? record.customerCode : '');
+                    
+                    const params = new URLSearchParams({
+                        action: 'getHistory',
+                        customerCode: targetCustomerCode || '',
+                        schoolName: schoolName
+                    });
+                    
+                    showSyncIndicator('履歴を取得中...', 'info');
+                    
+                    const response = await fetch(`${apiUrl}?${params.toString()}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    if (result.error) {
+                        console.warn('サーバー履歴取得エラー:', result.error);
+                        showSyncIndicator('サーバー履歴取得失敗', 'error');
+                    } else if (result.history) {
+                        serverHistory = result.history;
+                        showSyncIndicator(`サーバー履歴取得完了 (${serverHistory.length}件)`, 'success');
+                    }
+                }
+                
+                // サーバー履歴とローカル履歴を統合
+                editHistory = mergeHistories(serverHistory, localHistory);
+                
+            } catch (error) {
+                console.error('履歴取得エラー:', error);
+                showSyncIndicator('履歴取得に失敗しました', 'error');
+                
+                // エラー時はローカル履歴のみ使用
+                editHistory = localHistory;
+            }
+            
+            renderHistoryTable();
+            document.getElementById('historyModal').style.display = 'block';
+        }
+
+        // サーバー履歴とローカル履歴の統合関数
+        function mergeHistories(serverHistory, localHistory) {
+            const merged = [...serverHistory];
+            const serverEditDates = new Set(serverHistory.map(h => h.editDate));
+            
+            // ローカル履歴でサーバーにない項目を追加
+            localHistory.forEach(localItem => {
+                if (!serverEditDates.has(localItem.editDate)) {
+                    merged.push({
+                        ...localItem,
+                        source: 'local' // ローカル由来であることを示すフラグ
+                    });
+                }
+            });
+            
+            // 編集日時でソート（新しい順）
+            return merged.sort((a, b) => new Date(b.editDate) - new Date(a.editDate));
+        }
+
+        // 履歴テーブルの表示を改良（ソース表示付き）
+        function renderHistoryTable() {
+            const schoolHistory = editHistory.filter(h => h.schoolName === currentHistorySchool);
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+            
+            const sortedHistory = [...schoolHistory].sort((a, b) => {
+                const dateA = new Date(a.editDate);
+                const dateB = new Date(b.editDate);
+                return historyNewestFirst ? dateB - dateA : dateA - dateB;
+            });
+            
+            sortedHistory.forEach(entry => {
+                const tr = document.createElement('tr');
+                
+                // ソース別のスタイリング
+                if (entry.source === 'local') {
+                    tr.classList.add('history-row-local');
+                    tr.title = 'ローカル履歴（サーバー未同期）';
+                } else {
+                    tr.classList.add('history-row-server');
+                    tr.title = 'サーバー履歴';
+                }
+                
+                const tdDate = document.createElement('td');
+                tdDate.textContent = formatDateTime(entry.editDate);
+                
+                const tdBy = document.createElement('td');
+                tdBy.textContent = entry.editedBy || entry.editor || '';
+                
+                const tdField = document.createElement('td');
+                tdField.textContent = entry.field;
+                
+                const tdOld = document.createElement('td');
+                tdOld.textContent = entry.oldValue;
+                
+                const tdNew = document.createElement('td');
+                tdNew.textContent = entry.newValue;
+                
+                const tdSource = document.createElement('td');
+                const sourceBadge = document.createElement('span');
+                sourceBadge.className = `history-source-badge history-source-${entry.source === 'local' ? 'local' : 'server'}`;
+                sourceBadge.textContent = entry.source === 'local' ? 'ローカル' : 'サーバー';
+                tdSource.appendChild(sourceBadge);
+                
+                tr.appendChild(tdDate);
+                tr.appendChild(tdBy);
+                tr.appendChild(tdField);
+                tr.appendChild(tdOld);
+                tr.appendChild(tdNew);
+                tr.appendChild(tdSource);
+                
+                tbody.appendChild(tr);
+            });
+            
+            const btn = document.getElementById('historySortBtn');
+            btn.textContent = historyNewestFirst ? '🔄 新しい順' : '🔄 古い順';
+        }
+
+        function toggleHistorySort() {
+            historyNewestFirst = !historyNewestFirst;
+            renderHistoryTable();
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('historyModal').style.display = 'none';
+        }
+
         function resetLocalData() {
             const firstConfirm = confirm(
                 '全てのローカルデータを削除しますか？\n\n' +
@@ -1268,6 +1498,7 @@
                 populateAssignedToFilter();
                 applyAllFilters();
                 updateEmptyState();
+                updateLastModifiedInfo();
                 showSyncIndicator('ローカルデータを完全にリセットしました', 'success');
             } catch (error) {
                 console.error('Reset error:', error);
@@ -1275,7 +1506,7 @@
             }
         }
 
-        // アカウント情報
+        // アカウント情報（⚠️ 本番運用前にセキュアな認証に変更してください）
         const accounts = {
             'taniguchi': { password: 'Chuoh1400', role: 'admin', name: '谷口' },
             'shimatani': { password: 'shimatani1400', role: 'staff', name: '島谷' },
@@ -1390,6 +1621,7 @@
             }
             populateAssignedToFilter();
             applyAllFilters();
+            updateLastModifiedInfo();
         }
 
         function applyAllFilters() {
@@ -1577,7 +1809,7 @@
                 const histBtn = document.createElement('button');
                 histBtn.className = 'action-btn history-btn';
                 histBtn.textContent = '履歴';
-                histBtn.addEventListener('click', () => showHistory(row.schoolName));
+                histBtn.addEventListener('click', () => showHistory(row.schoolName, row.customerCode));
                 tdActions.appendChild(histBtn);
 
                 tr.appendChild(tdSchool);
@@ -1766,7 +1998,7 @@
                 const histBtn = document.createElement('button');
                 histBtn.className = 'card-action-btn card-history-btn';
                 histBtn.textContent = '📋 履歴';
-                histBtn.addEventListener('click', () => showHistory(row.schoolName));
+                histBtn.addEventListener('click', () => showHistory(row.schoolName, row.customerCode));
                 actions.appendChild(histBtn);
 
                 card.appendChild(header);
@@ -1851,59 +2083,6 @@
             filteredData = [...nonZeroRecords, ...zeroRecords];
             renderTable();
             showTempMessage(newestFirst ? '🕒 更新が新しい順で表示中' : '🕒 更新が古い順で表示中');
-        }
-
-        function showHistory(schoolName) {
-            currentHistorySchool = schoolName;
-            renderHistoryTable();
-            document.getElementById('historyModal').style.display = 'block';
-        }
-
-        function renderHistoryTable() {
-            const schoolHistory = editHistory.filter(h => h.schoolName === currentHistorySchool);
-            const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = '';
-            
-            const sortedHistory = [...schoolHistory].sort((a, b) => {
-                const dateA = new Date(a.editDate);
-                const dateB = new Date(b.editDate);
-                return historyNewestFirst ? dateB - dateA : dateA - dateB;
-            });
-            
-            sortedHistory.forEach(entry => {
-                const tr = document.createElement('tr');
-                
-                const tdDate = document.createElement('td');
-                tdDate.textContent = entry.editDate;
-                
-                const tdBy = document.createElement('td');
-                tdBy.textContent = entry.editedBy;
-                
-                const tdField = document.createElement('td');
-                tdField.textContent = entry.field;
-                
-                const tdOld = document.createElement('td');
-                tdOld.textContent = entry.oldValue;
-                
-                const tdNew = document.createElement('td');
-                tdNew.textContent = entry.newValue;
-                
-                tr.appendChild(tdDate);
-                tr.appendChild(tdBy);
-                tr.appendChild(tdField);
-                tr.appendChild(tdOld);
-                tr.appendChild(tdNew);
-                
-                tbody.appendChild(tr);
-            });
-            
-            const btn = document.getElementById('historySortBtn');
-            btn.textContent = historyNewestFirst ? '🔄 新しい順' : '🔄 古い順';
-        }
-
-        function toggleHistorySort() {
-            historyNewestFirst = !historyNewestFirst;
-            renderHistoryTable();
         }
 
         function showTempMessage(message) {
@@ -2012,11 +2191,10 @@
                 localStorage.setItem('jukuSystemData', JSON.stringify(allData));
                 populateAssignedToFilter();
                 applyAllFilters();
+                updateLastModifiedInfo();
 
                 const timestamp = new Date();
                 status.textContent = `✓ 同期完了 (${allData.length}件)`;
-                document.getElementById('lastSyncInfo').textContent = 
-                    `最終同期: ${timestamp.toLocaleTimeString('ja-JP')}`;
                 showSyncIndicator(`同期完了 (${allData.length}件)`, 'success');
                 setTimeout(() => status.textContent = '', 3000);
 
@@ -2142,6 +2320,7 @@
                     localStorage.setItem('jukuSystemData', JSON.stringify(allData));
                     populateAssignedToFilter();
                     applyAllFilters();
+                    updateLastModifiedInfo();
                     alert(`${targets.length}件の0円案件をローカルから削除しました`);
                 }
             } catch (error) {
@@ -2186,6 +2365,7 @@
                     localStorage.setItem('jukuSystemData', JSON.stringify(allData));
                     populateAssignedToFilter();
                     applyAllFilters();
+                    updateLastModifiedInfo();
                     alert(`${record.schoolName} をローカルから削除しました`);
                 }
             } catch (error) {
@@ -2242,10 +2422,6 @@
             document.getElementById('editModal').style.display = 'none';
         }
 
-        function closeHistoryModal() {
-            document.getElementById('historyModal').style.display = 'none';
-        }
-
         // フォーム送信（双方向同期対応）
         document.getElementById('editForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -2283,6 +2459,7 @@
                         localStorage.setItem('jukuSystemData', JSON.stringify(allData));
                         populateAssignedToFilter();
                         applyAllFilters();
+                        updateLastModifiedInfo();
                     }
                 } else {
                     // 編集
@@ -2323,6 +2500,7 @@
                         localStorage.setItem('jukuSystemData', JSON.stringify(allData));
                         populateAssignedToFilter();
                         applyAllFilters();
+                        updateLastModifiedInfo();
                     }
                 }
                 closeModal();
@@ -2337,7 +2515,7 @@
                 id: Date.now() + Math.random(),
                 schoolName: schoolName,
                 editedBy: currentUser.name,
-                editDate: new Date().toLocaleString('ja-JP'),
+                editDate: new Date().toISOString(),
                 field: field,
                 oldValue: oldValue || '',
                 newValue: newValue || '',
@@ -2417,7 +2595,7 @@
             })));
             
             XLSX.utils.book_append_sheet(wb, ws, 'データ');
-            XLSX.writeFile(wb, 'juku_data_v25a.xlsx');
+            XLSX.writeFile(wb, 'juku_data_v26.xlsx');
         }
 
         function importFromExcel(event) {
@@ -2459,6 +2637,7 @@
                     localStorage.setItem('jukuSystemData', JSON.stringify(allData));
                     populateAssignedToFilter();
                     applyAllFilters();
+                    updateLastModifiedInfo();
                     alert(`${importedData.length}件のデータをインポートしました`);
                 } catch (error) {
                     console.error(error);
