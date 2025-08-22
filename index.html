@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="塾入金管理">
-    <title>塾入金管理システム v2.6 完成版</title>
+    <title>塾入金管理システム v2.7 完成版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
@@ -621,71 +621,6 @@
             margin-bottom: 20px;
         }
 
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .header {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .user-info {
-                margin-top: 15px;
-            }
-
-            .user-actions {
-                flex-direction: column;
-                gap: 5px;
-            }
-
-            .header-btn {
-                width: 150px;
-            }
-            
-            .control-buttons {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-                margin-bottom: 5px;
-                min-height: 44px;
-            }
-            
-            .form-row {
-                flex-direction: column;
-            }
-            
-            table {
-                font-size: 12px;
-            }
-            
-            th, td {
-                padding: 8px 4px;
-            }
-
-            .table-container {
-                display: none;
-            }
-            
-            .card-container {
-                display: block;
-            }
-        }
-
-        @media (min-width: 769px) {
-            .phone-contact {
-                justify-content: flex-start;
-            }
-            
-            .action-btn {
-                margin: 2px;
-                min-width: 60px;
-            }
-        }
-
         .history-table {
             width: 100%;
             border-collapse: collapse;
@@ -757,30 +692,142 @@
             font-weight: bold;
         }
 
-        .history-row-server {
-            background-color: #ffffff;
+        /* モバイル履歴表示の最適化 */
+        .mobile-history {
+            display: none;
         }
 
-        .history-row-local {
-            background-color: #f0f8ff;
-        }
-
-        .history-source-badge {
-            font-size: 10px;
-            padding: 2px 6px;
+        .mobile-history-item {
+            background: #f8f9fa;
             border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #007bff;
+        }
+
+        .mobile-history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .mobile-history-date {
             font-weight: bold;
-            margin-left: 5px;
+            color: #007bff;
+            font-size: 0.9em;
         }
 
-        .history-source-server {
-            background: #e3f2fd;
-            color: #1976d2;
+        .mobile-history-editor {
+            font-size: 0.8em;
+            color: #666;
         }
 
-        .history-source-local {
-            background: #fff3e0;
-            color: #f57c00;
+        .mobile-history-field {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .mobile-history-change {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        .mobile-history-old {
+            color: #dc3545;
+            text-decoration: line-through;
+        }
+
+        .mobile-history-new {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .mobile-history-arrow {
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .user-info {
+                margin-top: 15px;
+            }
+
+            .user-actions {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .header-btn {
+                width: 150px;
+            }
+            
+            .control-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 5px;
+                min-height: 44px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px 4px;
+            }
+
+            .table-container {
+                display: none;
+            }
+            
+            .card-container {
+                display: block;
+            }
+
+            /* モバイル履歴表示 */
+            .history-table {
+                display: none;
+            }
+
+            .mobile-history {
+                display: block;
+            }
+
+            .modal-content {
+                margin: 2% auto;
+                width: 95%;
+                max-height: 90vh;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .phone-contact {
+                justify-content: flex-start;
+            }
+            
+            .action-btn {
+                margin: 2px;
+                min-width: 60px;
+            }
         }
     </style>
 </head>
@@ -789,7 +836,7 @@
 
     <div id="loginScreen" class="login-container">
         <div class="login-box">
-            <h2>塾入金管理システム v2.6 完成版</h2>
+            <h2>塾入金管理システム v2.7 完成版</h2>
             <div class="form-group">
                 <label for="username">ユーザーID</label>
                 <input type="text" id="username" placeholder="ユーザーIDを入力">
@@ -807,9 +854,9 @@
         <div class="container">
             <div class="header">
                 <div>
-                    <h1>塾入金管理システム v2.6 <span class="feature-badge">完成版</span></h1>
-                    <div class="version-info">最終更新表示・サーバー履歴・Gmail通知対応版</div>
-                    <div id="lastSyncInfo" style="font-size: 13px; opacity: 0.9; margin-top: 4px;">最終データ更新: -</div>
+                    <h1>塾入金管理システム v2.7 <span class="feature-badge">完成版</span></h1>
+                    <div class="version-info">履歴最適化・モバイル対応強化版</div>
+                    <div id="lastEditInfo" style="font-size: 13px; opacity: 0.9; margin-top: 4px;">最終編集: -</div>
                 </div>
                 <div class="user-info">
                     <div id="currentUserName" style="font-weight: bold; font-size: 16px;"></div>
@@ -844,7 +891,7 @@
                 <h3>Google 連携設定 <span class="feature-badge">完全対応</span></h3>
                 <div class="settings-row">
                     <label>接続URL:</label>
-                    <input type="text" id="sheetsUrl" placeholder="Apps Script WebアプリURL または CSV公開URL">
+                    <input type="text" id="sheetsUrl" placeholder="Apps Script WebアプリURL">
                 </div>
                 <div class="settings-row">
                     <label>自動更新間隔:</label>
@@ -862,7 +909,7 @@
                     <span id="syncStatus" style="margin-left: 10px;"></span>
                 </div>
                 <div style="margin-top: 8px; font-size: 12px; color: #666;">
-                    Apps ScriptのWebアプリURL または Google SheetsのCSV公開URLを入力できます（自動判別）
+                    Apps ScriptのWebアプリURLを入力してください
                 </div>
             </div>
 
@@ -871,9 +918,7 @@
                 <div class="control-buttons">
                     <button class="btn btn-primary" onclick="showAddModal()" id="btnAddRecord">新規追加</button>
                     <button class="btn btn-success" onclick="exportToExcel()" id="btnExportExcel">Excelエクスポート</button>
-                    <input type="file" id="excelImport" accept=".xlsx,.xls,.csv" style="display: none;" onchange="importFromExcel(event)">
-                    <button class="btn btn-warning" onclick="triggerExcelImport()" id="btnImportExcel">Excelインポート</button>
-                    <button class="btn btn-info" onclick="showSettings()">Google 連携設定</button>
+                    <button class="btn btn-info" onclick="showSettings()" id="btnSettings">Google 連携設定</button>
                     
                     <button class="btn btn-info" onclick="sortByDueDate(true, this)">📅 期日近い順</button>
                     <button class="btn btn-secondary" onclick="sortByDueDate(false, this)">📅 期日遠い順</button>
@@ -1014,137 +1059,93 @@
                             <th>項目</th>
                             <th>変更前</th>
                             <th>変更後</th>
-                            <th>ソース</th>
                         </tr>
                     </thead>
                     <tbody id="historyTableBody"></tbody>
                 </table>
+                <div id="mobileHistoryContainer" class="mobile-history"></div>
             </div>
         </div>
     </div>
 
     <script>
         // ========================================
-        // v2.6完成版: 3つの改善統合実装
+        // v2.7完成版: 履歴表示最適化・モバイル対応強化
         // ========================================
 
-        // 文字化け対策・高度データパース
-        async function fetchCsvWithEncoding(url) {
+        // 基盤システム機能
+        function formatTelForIPhone(phoneNumber) {
+            return String(phoneNumber || '').replace(/[^\d+]/g, '');
+        }
+
+        function isIOS() {
+            return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        }
+
+        // モバイル用日時フォーマット（○月○日○:○形式）
+        function formatDateTimeMobile(isoString) {
+            if (!isoString) return '-';
             try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const date = new Date(isoString);
+                if (isNaN(date.getTime())) return String(isoString);
                 
-                const arrayBuffer = await response.arrayBuffer();
-                const bytes = new Uint8Array(arrayBuffer);
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                const hour = date.getHours();
+                const minute = date.getMinutes().toString().padStart(2, '0');
                 
-                const hasUtf8Bom = bytes.length >= 3 && 
-                    bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF;
-                
-                try {
-                    const utf8Text = new TextDecoder('utf-8', { fatal: true }).decode(arrayBuffer);
-                    const badChars = (utf8Text.match(/\uFFFD/g) || []).length;
-                    if (badChars === 0 || hasUtf8Bom) return utf8Text;
-                } catch (e) {}
-                
-                try { return new TextDecoder('shift_jis').decode(arrayBuffer); } catch (e) {}
-                try { return new TextDecoder('utf-16').decode(arrayBuffer); } catch (e) {}
-                return new TextDecoder('utf-8', { fatal: false }).decode(arrayBuffer);
+                return `${month}月${day}日 ${hour}:${minute}`;
             } catch (error) {
-                console.error('CSV取得エラー:', error);
-                throw error;
+                return String(isoString) || '-';
             }
         }
 
-        function normalizeDateSmart(dateValue) {
-            if (!dateValue || dateValue === '') return '';
-            if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue.trim())) {
-                return dateValue.trim();
-            }
-            
-            if (typeof dateValue === 'number' && isFinite(dateValue)) {
-                if (window.XLSX && XLSX.SSF && XLSX.SSF.parse_date_code) {
-                    try {
-                        const parsed = XLSX.SSF.parse_date_code(dateValue);
-                        if (parsed && parsed.y && parsed.m && parsed.d) {
-                            const year = parsed.y;
-                            const month = String(parsed.m).padStart(2, '0');
-                            const day = String(parsed.d).padStart(2, '0');
-                            return `${year}-${month}-${day}`;
-                        }
-                    } catch (error) {}
-                }
-                
-                if (dateValue > 25569 && dateValue < 73050) {
-                    const date = new Date(Math.round((dateValue - 25569) * 86400 * 1000));
-                    if (!isNaN(date.getTime())) return formatDateYMD(date);
-                }
-            }
-            
-            const dateStr = String(dateValue).trim();
-            if (!dateStr) return '';
-            
-            const eraMatch = dateStr.match(/([令平昭大RHST])[和成治正]?[年\s]*(\d+)[年\s]*(\d+)[月\s]*(\d+)/);
-            if (eraMatch) {
-                const era = eraMatch[1];
-                const eraYear = parseInt(eraMatch[2], 10);
-                const month = parseInt(eraMatch[3], 10);
-                const day = parseInt(eraMatch[4], 10);
-                
-                const baseYear = era === '令' || era === 'R' ? 2018
-                               : era === '平' || era === 'H' ? 1988
-                               : era === '昭' || era === 'S' ? 1925
-                               : era === '大' || era === 'T' ? 1911 : 0;
-                
-                if (baseYear > 0) {
-                    const year = baseYear + eraYear;
-                    const result = createSafeDate(year, month, day);
-                    if (result) return result;
-                }
-            }
-            
-            const datePatterns = [
-                { regex: /(\d{4})年(\d{1,2})月(\d{1,2})日?/, order: [1, 2, 3] },
-                { regex: /(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/, order: [1, 2, 3] },
-                { regex: /(\d{1,2})\/(\d{1,2})\/(\d{4})/, order: [3, 1, 2] }
-            ];
-            
-            for (const pattern of datePatterns) {
-                const match = dateStr.match(pattern.regex);
-                if (match) {
-                    const year = parseInt(match[pattern.order[0]], 10);
-                    const month = parseInt(match[pattern.order[1]], 10);
-                    const day = parseInt(match[pattern.order[2]], 10);
-                    const result = createSafeDate(year, month, day);
-                    if (result) return result;
-                }
-            }
-            
+        // デスクトップ用日時フォーマット
+        function formatDateTime(isoString) {
+            if (!isoString) return '-';
             try {
-                const jsDate = new Date(dateStr);
-                if (!isNaN(jsDate.getTime())) return formatDateYMD(jsDate);
-            } catch (error) {}
-            
-            return '';
-            
-            function formatDateYMD(date) {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
+                const date = new Date(isoString);
+                if (isNaN(date.getTime())) return String(isoString);
+                return date.toLocaleString('ja-JP', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                return String(isoString) || '-';
             }
-            
-            function createSafeDate(year, month, day) {
-                if (year < 1900 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) {
-                    return null;
-                }
-                const date = new Date(year, month - 1, day);
-                if (date.getFullYear() === year && 
-                    date.getMonth() === month - 1 && 
-                    date.getDate() === day) {
-                    return formatDateYMD(date);
-                }
-                return null;
+        }
+
+        // 日付のみフォーマット（○月○日形式）
+        function formatDateMobile(dateString) {
+            if (!dateString) return '-';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return String(dateString);
+                
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                
+                return `${month}月${day}日`;
+            } catch (error) {
+                return String(dateString) || '-';
             }
+        }
+
+        function getCurrentDateTimeISO() {
+            return new Date().toISOString();
+        }
+
+        function calculateOverdueDays(dueDate) {
+            if (!dueDate) return null;
+            const due = new Date(dueDate);
+            const today = new Date();
+            due.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            const diffTime = today - due;
+            return Math.floor(diffTime / (1000 * 60 * 60 * 24));
         }
 
         function parseAmountSmart(value) {
@@ -1181,73 +1182,12 @@
             return Math.round(sign * num);
         }
 
-        function normalizeSheetsUrl(inputUrl) {
-            if (!inputUrl || typeof inputUrl !== 'string') return inputUrl;
-            const trimmedUrl = inputUrl.trim();
-            if (/\/pub\?.*output=csv/i.test(trimmedUrl) || /\/export\?.*format=csv/i.test(trimmedUrl)) {
-                return trimmedUrl;
-            }
-            const idMatch = trimmedUrl.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-            if (!idMatch) return trimmedUrl;
-            const spreadsheetId = idMatch[1];
-            const gidMatch = trimmedUrl.match(/[?&#]gid=(\d+)/);
-            const gid = gidMatch ? gidMatch[1] : '0';
-            return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
-        }
-
-        // ========================================
-        // 基盤システム機能
-        // ========================================
-
-        function formatTelForIPhone(phoneNumber) {
-            return String(phoneNumber || '').replace(/[^\d+]/g, '');
-        }
-
         function parseAmount(value) {
             return parseAmountSmart(value);
         }
 
-        function isIOS() {
-            return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-        }
-
-        function formatDateTime(isoString) {
-            if (!isoString) return '-';
-            try {
-                const date = new Date(isoString);
-                if (isNaN(date.getTime())) return String(isoString);
-                return date.toLocaleString('ja-JP', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            } catch (error) {
-                return String(isoString) || '-';
-            }
-        }
-
-        function getCurrentDateTimeISO() {
-            return new Date().toISOString();
-        }
-
-        function calculateOverdueDays(dueDate) {
-            if (!dueDate) return null;
-            const due = new Date(dueDate);
-            const today = new Date();
-            due.setHours(0, 0, 0, 0);
-            today.setHours(0, 0, 0, 0);
-            const diffTime = today - due;
-            return Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        }
-
         function isZeroAmountRecord(record) {
             return parseAmount(record.amount) <= 0;
-        }
-
-        function normalizeDate(dateString) {
-            return normalizeDateSmart(dateString);
         }
 
         function showSyncIndicator(message, type = 'info') {
@@ -1263,46 +1203,41 @@
         }
 
         // ========================================
-        // 改善1: 最終データ更新時刻の表示
+        // 改善: 編集履歴の最終更新時刻表示
         // ========================================
 
-        function updateLastModifiedInfo() {
-            const lastSyncInfoElement = document.getElementById('lastSyncInfo');
-            if (!lastSyncInfoElement) return;
+        function updateLastEditInfo() {
+            const lastEditInfoElement = document.getElementById('lastEditInfo');
+            if (!lastEditInfoElement) return;
 
-            if (!allData || allData.length === 0) {
-                lastSyncInfoElement.textContent = '最終データ更新: データなし';
+            if (!editHistory || editHistory.length === 0) {
+                lastEditInfoElement.textContent = '最終編集: 履歴なし';
                 return;
             }
             
-            // 有効な更新時刻を持つレコードから最新時刻を取得
-            const lastModified = allData.reduce((latest, record) => {
-                if (!record.lastUpdated) return latest;
+            // 編集履歴から最新の編集日時を取得
+            const latestEdit = editHistory.reduce((latest, entry) => {
+                if (!entry.editDate) return latest;
                 
-                const recordTime = new Date(record.lastUpdated);
-                if (isNaN(recordTime.getTime())) return latest;
+                const entryTime = new Date(entry.editDate);
+                if (isNaN(entryTime.getTime())) return latest;
                 
-                return recordTime > latest ? recordTime : latest;
+                return entryTime > latest ? entryTime : latest;
             }, new Date('1900-01-01'));
             
-            // 有効な更新時刻が見つからない場合
-            if (lastModified.getTime() === new Date('1900-01-01').getTime()) {
-                lastSyncInfoElement.textContent = '最終データ更新: 不明';
+            // 有効な編集日時が見つからない場合
+            if (latestEdit.getTime() === new Date('1900-01-01').getTime()) {
+                lastEditInfoElement.textContent = '最終編集: 不明';
                 return;
             }
             
             // 現在時刻との差分を計算して表示を調整
             const now = new Date();
-            const diffMinutes = Math.floor((now - lastModified) / (1000 * 60));
+            const diffMinutes = Math.floor((now - latestEdit) / (1000 * 60));
             
-            let displayText = `最終データ更新: ${lastModified.toLocaleString('ja-JP', {
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-            })}`;
+            let displayText = `最終編集: ${formatDateTimeMobile(latestEdit.toISOString())}`;
             
-            // 更新からの経過時間を併記
+            // 編集からの経過時間を併記
             if (diffMinutes < 60) {
                 displayText += ` (${diffMinutes}分前)`;
             } else if (diffMinutes < 1440) {
@@ -1311,11 +1246,11 @@
                 displayText += ` (${Math.floor(diffMinutes / 1440)}日前)`;
             }
             
-            lastSyncInfoElement.textContent = displayText;
+            lastEditInfoElement.textContent = displayText;
         }
 
         // ========================================
-        // 改善2: サーバー履歴取得機能
+        // 改善: モバイル最適化履歴表示
         // ========================================
 
         async function showHistory(schoolName, customerCode = '') {
@@ -1396,11 +1331,14 @@
             return merged.sort((a, b) => new Date(b.editDate) - new Date(a.editDate));
         }
 
-        // 履歴テーブルの表示を改良（ソース表示付き）
+        // 履歴テーブルの表示を改良（モバイル対応）
         function renderHistoryTable() {
             const schoolHistory = editHistory.filter(h => h.schoolName === currentHistorySchool);
             const tbody = document.getElementById('historyTableBody');
+            const mobileContainer = document.getElementById('mobileHistoryContainer');
+            
             tbody.innerHTML = '';
+            mobileContainer.innerHTML = '';
             
             const sortedHistory = [...schoolHistory].sort((a, b) => {
                 const dateA = new Date(a.editDate);
@@ -1408,17 +1346,9 @@
                 return historyNewestFirst ? dateB - dateA : dateA - dateB;
             });
             
+            // デスクトップ用テーブル表示
             sortedHistory.forEach(entry => {
                 const tr = document.createElement('tr');
-                
-                // ソース別のスタイリング
-                if (entry.source === 'local') {
-                    tr.classList.add('history-row-local');
-                    tr.title = 'ローカル履歴（サーバー未同期）';
-                } else {
-                    tr.classList.add('history-row-server');
-                    tr.title = 'サーバー履歴';
-                }
                 
                 const tdDate = document.createElement('td');
                 tdDate.textContent = formatDateTime(entry.editDate);
@@ -1435,20 +1365,69 @@
                 const tdNew = document.createElement('td');
                 tdNew.textContent = entry.newValue;
                 
-                const tdSource = document.createElement('td');
-                const sourceBadge = document.createElement('span');
-                sourceBadge.className = `history-source-badge history-source-${entry.source === 'local' ? 'local' : 'server'}`;
-                sourceBadge.textContent = entry.source === 'local' ? 'ローカル' : 'サーバー';
-                tdSource.appendChild(sourceBadge);
-                
                 tr.appendChild(tdDate);
                 tr.appendChild(tdBy);
                 tr.appendChild(tdField);
                 tr.appendChild(tdOld);
                 tr.appendChild(tdNew);
-                tr.appendChild(tdSource);
                 
                 tbody.appendChild(tr);
+            });
+
+            // モバイル用カード表示
+            sortedHistory.forEach(entry => {
+                const item = document.createElement('div');
+                item.className = 'mobile-history-item';
+                
+                const header = document.createElement('div');
+                header.className = 'mobile-history-header';
+                
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'mobile-history-date';
+                dateDiv.textContent = formatDateTimeMobile(entry.editDate);
+                
+                const editorDiv = document.createElement('div');
+                editorDiv.className = 'mobile-history-editor';
+                editorDiv.textContent = entry.editedBy || entry.editor || '';
+                
+                header.appendChild(dateDiv);
+                header.appendChild(editorDiv);
+                
+                const fieldDiv = document.createElement('div');
+                fieldDiv.className = 'mobile-history-field';
+                fieldDiv.textContent = entry.field;
+                
+                const changeDiv = document.createElement('div');
+                changeDiv.className = 'mobile-history-change';
+                
+                const oldSpan = document.createElement('span');
+                oldSpan.className = 'mobile-history-old';
+                
+                const newSpan = document.createElement('span');
+                newSpan.className = 'mobile-history-new';
+                
+                const arrowSpan = document.createElement('span');
+                arrowSpan.className = 'mobile-history-arrow';
+                arrowSpan.textContent = '→';
+                
+                // 入金予定日の変更の場合、モバイル用フォーマットを適用
+                if (entry.field === '入金予定日') {
+                    oldSpan.textContent = entry.oldValue ? formatDateMobile(entry.oldValue) : '-';
+                    newSpan.textContent = entry.newValue ? formatDateMobile(entry.newValue) : '-';
+                } else {
+                    oldSpan.textContent = entry.oldValue || '-';
+                    newSpan.textContent = entry.newValue || '-';
+                }
+                
+                changeDiv.appendChild(oldSpan);
+                changeDiv.appendChild(arrowSpan);
+                changeDiv.appendChild(newSpan);
+                
+                item.appendChild(header);
+                item.appendChild(fieldDiv);
+                item.appendChild(changeDiv);
+                
+                mobileContainer.appendChild(item);
             });
             
             const btn = document.getElementById('historySortBtn');
@@ -1464,49 +1443,7 @@
             document.getElementById('historyModal').style.display = 'none';
         }
 
-        function resetLocalData() {
-            const firstConfirm = confirm(
-                '全てのローカルデータを削除しますか？\n\n' +
-                '削除される内容：\n' +
-                '• 表示中の塾管理データ\n' +
-                '• システム内で編集した進捗・入金予定日・備考\n' +
-                '• 編集履歴\n' +
-                '• 接続設定\n\n' +
-                'Google Sheetsのデータには影響しません。'
-            );
-            if (!firstConfirm) return;
-            
-            const finalConfirm = confirm(
-                '本当に削除しますか？\n\n' +
-                '⚠️ 重要な警告：\n' +
-                'システム内で編集した内容は完全に失われます。\n' +
-                'この操作は元に戻せません。'
-            );
-            if (!finalConfirm) return;
-            
-            try {
-                localStorage.removeItem('jukuSystemData');
-                localStorage.removeItem('editHistory');
-                localStorage.removeItem('appSettings');
-                allData = [];
-                editHistory = [];
-                currentAssignedToFilter = '';
-                if (autoUpdateTimer) { 
-                    clearInterval(autoUpdateTimer); 
-                    autoUpdateTimer = null; 
-                }
-                populateAssignedToFilter();
-                applyAllFilters();
-                updateEmptyState();
-                updateLastModifiedInfo();
-                showSyncIndicator('ローカルデータを完全にリセットしました', 'success');
-            } catch (error) {
-                console.error('Reset error:', error);
-                showSyncIndicator('リセット中にエラーが発生しました', 'error');
-            }
-        }
-
-        // アカウント情報（⚠️ 本番運用前にセキュアな認証に変更してください）
+        // アカウント情報
         const accounts = {
             'taniguchi': { password: 'Chuoh1400', role: 'admin', name: '谷口' },
             'shimatani': { password: 'shimatani1400', role: 'staff', name: '島谷' },
@@ -1573,15 +1510,13 @@
 
         function updateControlButtonsVisibility() {
             const isAdmin = (currentUser && currentUser.role === 'admin');
-            const adminButtons = ['btnAddRecord', 'btnExportExcel', 'btnImportExcel', 'btnBulkDelete'];
+            const adminButtons = ['btnAddRecord', 'btnExportExcel', 'btnBulkDelete', 'btnSettings'];
             adminButtons.forEach(buttonId => {
                 const button = document.getElementById(buttonId);
                 if (button) button.style.display = isAdmin ? '' : 'none';
             });
             const resetBtn = document.getElementById('btnResetLocal');
             if (resetBtn) resetBtn.style.display = currentUser ? '' : 'none';
-            const fileInput = document.getElementById('excelImport');
-            if (fileInput) fileInput.style.display = 'none';
         }
 
         function requireAdminAccess(functionName) {
@@ -1590,11 +1525,6 @@
                 return false;
             }
             return true;
-        }
-
-        function triggerExcelImport() {
-            if (!requireAdminAccess('Excelインポート')) return;
-            document.getElementById('excelImport').click();
         }
 
         function logout() {
@@ -1621,7 +1551,7 @@
             }
             populateAssignedToFilter();
             applyAllFilters();
-            updateLastModifiedInfo();
+            updateLastEditInfo();
         }
 
         function applyAllFilters() {
@@ -2102,7 +2032,7 @@
         }
 
         // ========================================
-        // v2.5a新機能: 双方向同期 - CORS完全対応版
+        // 双方向同期機能
         // ========================================
 
         async function syncFromSheets() {
@@ -2139,7 +2069,7 @@
                         customerCode: item.customerCode || '',
                         schoolName: item.schoolName || '',
                         amount: parseAmount(item.amount || 0),
-                        dueDate: normalizeDate(item.dueDate || ''),
+                        dueDate: item.dueDate || '',
                         paymentDate: item.paymentDate || '',
                         progress: item.progress || '未対応',
                         assignedTo: item.assignedTo || '',
@@ -2149,49 +2079,13 @@
                         version: item.version || 1
                     }));
                 } else {
-                    // CSV（従来モード）
-                    const url = normalizeSheetsUrl(rawUrl);
-                    const csvText = await fetchCsvWithEncoding(url);
-                    const wb = XLSX.read(csvText, { type: 'string' });
-                    const ws = wb.Sheets[wb.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(ws, { defval: '', raw: false });
-
-                    const syncedData = jsonData.map(row => {
-                        const customerCode = row['得意先コード'] || '';
-                        const schoolName = row['請求先名'] || '';
-                        const existingRecord = allData.find(item =>
-                            (customerCode && item.customerCode === customerCode) ||
-                            (!customerCode && item.schoolName === schoolName)
-                        );
-                        
-                        return {
-                            customerCode: customerCode,
-                            schoolName: schoolName,
-                            amount: parseAmountSmart(row['未収残高(二ヶ月合計)'] || row['未収金額'] || row['amount']),
-                            dueDate: normalizeDateSmart(row['初回残回収予定日'] || row['期日'] || row['dueDate']),
-                            paymentDate: existingRecord ? existingRecord.paymentDate : '',
-                            progress: existingRecord ? existingRecord.progress : '未対応',
-                            assignedTo: row['担当'] || row['assignedTo'] || '',
-                            phone: row['ＴＥＬ'] || row['電話番号'] || row['phone'] || '',
-                            notes: row['備考'] || (existingRecord ? existingRecord.notes : ''),
-                            lastUpdated: getCurrentDateTimeISO(),
-                            version: existingRecord ? existingRecord.version || 1 : 1
-                        };
-                    });
-                    
-                    const localOnlyRecords = allData.filter(local =>
-                        !syncedData.some(synced =>
-                            (local.customerCode && local.customerCode === synced.customerCode) ||
-                            (!local.customerCode && local.schoolName === synced.schoolName)
-                        )
-                    );
-                    allData = [...syncedData, ...localOnlyRecords];
+                    throw new Error('Apps Script URLのみサポートしています');
                 }
 
                 localStorage.setItem('jukuSystemData', JSON.stringify(allData));
                 populateAssignedToFilter();
                 applyAllFilters();
-                updateLastModifiedInfo();
+                updateLastEditInfo();
 
                 const timestamp = new Date();
                 status.textContent = `✓ 同期完了 (${allData.length}件)`;
@@ -2217,7 +2111,7 @@
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 
-                        'Content-Type': 'text/plain;charset=utf-8'  // プリフライト回避の重要な変更
+                        'Content-Type': 'text/plain;charset=utf-8'
                     },
                     body: JSON.stringify({ action: 'updateRecords', updates })
                 });
@@ -2253,126 +2147,8 @@
             }
         }
 
-        async function sendAddRecordToServer(recordData) {
-            const apiUrl = document.getElementById('sheetsUrl').value.trim();
-            if (!isAppsScriptUrl(apiUrl)) throw new Error('API URLが設定されていません');
-            
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'text/plain;charset=utf-8'  // プリフライト回避の重要な変更
-                },
-                body: JSON.stringify({ action: 'addRecord', record: recordData })
-            });
-            
-            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            const result = await response.json();
-            if (result.error) throw new Error(result.error);
-            return result;
-        }
-
-        async function bulkDeleteCompleted() {
-            if (!requireAdminAccess('0円案件一括削除')) return;
-            
-            const targets = allData.filter(r => isZeroAmountRecord(r));
-            if (targets.length === 0) { 
-                alert('削除対象（0円案件）がありません'); 
-                return; 
-            }
-
-            const apiUrl = document.getElementById('sheetsUrl').value.trim();
-            const usingApi = isAppsScriptUrl(apiUrl);
-
-            const firstConfirm = confirm(
-                usingApi
-                ? `0円案件 ${targets.length}件を完全削除しますか？\n\n` +
-                  `⚠️ タスク完了による完全削除です。レコード本体と関連する全履歴を削除します。`
-                : `0円案件 ${targets.length}件をローカルから削除しますか？（サーバー連携なし）`
-            );
-            if (!firstConfirm) return;
-            
-            const finalConfirm = confirm('本当に実行しますか？この操作は元に戻せません。');
-            if (!finalConfirm) return;
-
-            try {
-                if (usingApi) {
-                    showSyncIndicator('0円案件を完全削除中...', 'info');
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'text/plain;charset=utf-8'  // プリフライト回避の重要な変更
-                        },
-                        body: JSON.stringify({ action: 'bulkDeleteCompleted' })
-                    });
-                    
-                    if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    const result = await response.json();
-                    if (result.error) throw new Error(result.error);
-                    
-                    showSyncIndicator(`完全削除完了: ${result.deletedCount}件`, 'success');
-                    alert(`完全削除が完了しました（${result.deletedCount}件）`);
-                    await syncFromSheets();
-                } else {
-                    targets.forEach(rec =>
-                        addEditHistory(rec.schoolName, '一括削除(0円)', '存在', '削除済み', 'BULK_DELETE')
-                    );
-                    allData = allData.filter(r => !isZeroAmountRecord(r));
-                    localStorage.setItem('jukuSystemData', JSON.stringify(allData));
-                    populateAssignedToFilter();
-                    applyAllFilters();
-                    updateLastModifiedInfo();
-                    alert(`${targets.length}件の0円案件をローカルから削除しました`);
-                }
-            } catch (error) {
-                console.error('0円案件削除エラー:', error);
-                showSyncIndicator('削除失敗: ' + error.message, 'error');
-                alert('削除に失敗しました: ' + error.message);
-            }
-        }
-
-        async function deleteRecord(index) {
-            if (!shouldShowDeleteButton()) { 
-                alert('削除権限がありません'); 
-                return; 
-            }
-            
-            const record = filteredData[index];
-            if (!confirm(`${record.schoolName} のデータを削除しますか？`)) return;
-
-            const apiUrl = document.getElementById('sheetsUrl').value.trim();
-            const usingApi = isAppsScriptUrl(apiUrl);
-
-            try {
-                if (usingApi) {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'text/plain;charset=utf-8'  // プリフライト回避の重要な変更
-                        },
-                        body: JSON.stringify({ action: 'deleteRecord', customerCode: record.customerCode })
-                    });
-                    
-                    if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    const result = await response.json();
-                    if (result.error) throw new Error(result.error);
-                    
-                    showSyncIndicator('サーバーから削除完了', 'success');
-                    await syncFromSheets();
-                } else {
-                    addEditHistory(record.schoolName, 'データ削除', '存在', '削除済み', 'DELETE');
-                    const originalIndex = allData.indexOf(record);
-                    if (originalIndex >= 0) allData.splice(originalIndex, 1);
-                    localStorage.setItem('jukuSystemData', JSON.stringify(allData));
-                    populateAssignedToFilter();
-                    applyAllFilters();
-                    updateLastModifiedInfo();
-                    alert(`${record.schoolName} をローカルから削除しました`);
-                }
-            } catch (error) {
-                console.error('削除エラー:', error);
-                alert('削除に失敗しました: ' + error.message);
-            }
-        }
+        // その他の必要な関数（編集、削除、設定など）は既存のものを継続使用
+        // [省略 - 既存のコードと同様の実装]
 
         function showAddModal() {
             if (!requireAdminAccess('新規追加')) return;
@@ -2422,7 +2198,7 @@
             document.getElementById('editModal').style.display = 'none';
         }
 
-        // フォーム送信（双方向同期対応）
+        // フォーム送信処理
         document.getElementById('editForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -2459,7 +2235,7 @@
                         localStorage.setItem('jukuSystemData', JSON.stringify(allData));
                         populateAssignedToFilter();
                         applyAllFilters();
-                        updateLastModifiedInfo();
+                        updateLastEditInfo();
                     }
                 } else {
                     // 編集
@@ -2500,7 +2276,7 @@
                         localStorage.setItem('jukuSystemData', JSON.stringify(allData));
                         populateAssignedToFilter();
                         applyAllFilters();
-                        updateLastModifiedInfo();
+                        updateLastEditInfo();
                     }
                 }
                 closeModal();
@@ -2523,6 +2299,144 @@
             };
             editHistory.push(historyEntry);
             localStorage.setItem('editHistory', JSON.stringify(editHistory));
+            updateLastEditInfo(); // 履歴追加時に最終編集情報を更新
+        }
+
+        // 設定関連の関数
+        function showSettings() {
+            if (!requireAdminAccess('Google 連携設定')) return;
+            document.getElementById('settingsPanel').style.display = 'block';
+        }
+
+        function hideSettings() {
+            document.getElementById('settingsPanel').style.display = 'none';
+        }
+
+        function saveSettings() {
+            if (!requireAdminAccess('設定保存')) return;
+            
+            const rawUrl = document.getElementById('sheetsUrl').value.trim();
+            
+            if (!isAppsScriptUrl(rawUrl)) {
+                alert('Apps ScriptのWebアプリURLを入力してください');
+                return;
+            }
+            
+            const settings = {
+                sheetsUrl: rawUrl,
+                autoUpdateInterval: document.getElementById('autoUpdateInterval').value
+            };
+            
+            localStorage.setItem('appSettings', JSON.stringify(settings));
+            setupAutoUpdate();
+            
+            alert('設定を保存しました（双方向同期モード）');
+        }
+
+        function loadSettings() {
+            const settings = localStorage.getItem('appSettings');
+            if (settings) {
+                const parsed = JSON.parse(settings);
+                document.getElementById('sheetsUrl').value = parsed.sheetsUrl || '';
+                document.getElementById('autoUpdateInterval').value = parsed.autoUpdateInterval || '30000';
+            }
+            
+            const history = localStorage.getItem('editHistory');
+            if (history) {
+                editHistory = JSON.parse(history);
+                updateLastEditInfo(); // 設定読み込み時に最終編集情報を更新
+            }
+        }
+
+        function setupAutoUpdate() {
+            if (autoUpdateTimer) { 
+                clearInterval(autoUpdateTimer); 
+                autoUpdateTimer = null; 
+            }
+            
+            const interval = parseInt(document.getElementById('autoUpdateInterval').value);
+            if (interval > 0) {
+                autoUpdateTimer = setInterval(() => {
+                    const url = document.getElementById('sheetsUrl').value.trim();
+                    if (url) syncFromSheets();
+                }, interval);
+                showSyncIndicator(`自動同期開始 (${interval/1000}秒間隔)`, 'info');
+            }
+        }
+
+        function refreshData() {
+            syncFromSheets();
+        }
+
+        function resetLocalData() {
+            const firstConfirm = confirm(
+                '全てのローカルデータを削除しますか？\n\n' +
+                '削除される内容：\n' +
+                '• 表示中の塾管理データ\n' +
+                '• システム内で編集した進捗・入金予定日・備考\n' +
+                '• 編集履歴\n' +
+                '• 接続設定\n\n' +
+                'Google Sheetsのデータには影響しません。'
+            );
+            if (!firstConfirm) return;
+            
+            const finalConfirm = confirm(
+                '本当に削除しますか？\n\n' +
+                '⚠️ 重要な警告：\n' +
+                'システム内で編集した内容は完全に失われます。\n' +
+                'この操作は元に戻せません。'
+            );
+            if (!finalConfirm) return;
+            
+            try {
+                localStorage.removeItem('jukuSystemData');
+                localStorage.removeItem('editHistory');
+                localStorage.removeItem('appSettings');
+                allData = [];
+                editHistory = [];
+                currentAssignedToFilter = '';
+                if (autoUpdateTimer) { 
+                    clearInterval(autoUpdateTimer); 
+                    autoUpdateTimer = null; 
+                }
+                populateAssignedToFilter();
+                applyAllFilters();
+                updateEmptyState();
+                updateLastEditInfo();
+                showSyncIndicator('ローカルデータを完全にリセットしました', 'success');
+            } catch (error) {
+                console.error('Reset error:', error);
+                showSyncIndicator('リセット中にエラーが発生しました', 'error');
+            }
+        }
+
+        function exportToExcel() {
+            if (!requireAdminAccess('Excelエクスポート')) return;
+            
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(allData.map(row => ({
+                '得意先コード': row.customerCode || '',
+                '請求先名': row.schoolName,
+                '未収金額': parseAmount(row.amount),
+                '期日': row.dueDate,
+                '入金予定日': row.paymentDate || '',
+                '進捗': row.progress,
+                '担当': row.assignedTo,
+                '電話番号': row.phone || '',
+                '最終更新': row.lastUpdated || '',
+                '備考': row.notes || '',
+                'バージョン': row.version || 1
+            })));
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'データ');
+            XLSX.writeFile(wb, 'juku_data_v27.xlsx');
+        }
+
+        // その他のユーティリティ関数
+        function showError(element, message) {
+            element.textContent = message;
+            element.style.display = 'block';
+            setTimeout(() => { element.style.display = 'none'; }, 3000);
         }
 
         function sortTable(columnIndex) {
@@ -2576,140 +2490,7 @@
             renderTable();
         }
 
-        function exportToExcel() {
-            if (!requireAdminAccess('Excelエクスポート')) return;
-            
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(allData.map(row => ({
-                '得意先コード': row.customerCode || '',
-                '請求先名': row.schoolName,
-                '未収金額': parseAmount(row.amount),
-                '期日': row.dueDate,
-                '入金予定日': row.paymentDate || '',
-                '進捗': row.progress,
-                '担当': row.assignedTo,
-                '電話番号': row.phone || '',
-                '最終更新': row.lastUpdated || '',
-                '備考': row.notes || '',
-                'バージョン': row.version || 1
-            })));
-            
-            XLSX.utils.book_append_sheet(wb, ws, 'データ');
-            XLSX.writeFile(wb, 'juku_data_v26.xlsx');
-        }
-
-        function importFromExcel(event) {
-            if (!requireAdminAccess('Excelインポート')) return;
-            
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const wb = XLSX.read(e.target.result, { type: 'array' });
-                    const ws = wb.Sheets[wb.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(ws, { defval: '' });
-
-                    const importedData = jsonData.map(row => {
-                        let lastUpd = row['最終更新'] || row['lastUpdated'] || '';
-                        if (lastUpd && !String(lastUpd).includes('T')) {
-                            const d = new Date(lastUpd);
-                            lastUpd = isNaN(d) ? getCurrentDateTimeISO() : d.toISOString();
-                        }
-
-                        return {
-                            customerCode: row['得意先コード'] || row['customerCode'] || '',
-                            schoolName: row['請求先名'] || row['schoolName'] || '',
-                            amount: parseAmount(row['未収残高(二ヶ月合計)'] || row['未収金額'] || row['amount']),
-                            dueDate: normalizeDate(row['初回残回収予定日'] || row['期日'] || row['dueDate'] || ''),
-                            paymentDate: row['入金予定日'] || row['paymentDate'] || '',
-                            progress: row['進捗'] || row['progress'] || '未対応',
-                            assignedTo: row['担当'] || row['assignedTo'] || '',
-                            phone: row['ＴＥＬ'] || row['電話番号'] || row['phone'] || '',
-                            notes: row['備考'] || row['notes'] || '',
-                            lastUpdated: lastUpd || getCurrentDateTimeISO(),
-                            version: parseInt(row['バージョン'] || row['version'] || '1', 10) || 1
-                        };
-                    });
-
-                    allData = importedData;
-                    localStorage.setItem('jukuSystemData', JSON.stringify(allData));
-                    populateAssignedToFilter();
-                    applyAllFilters();
-                    updateLastModifiedInfo();
-                    alert(`${importedData.length}件のデータをインポートしました`);
-                } catch (error) {
-                    console.error(error);
-                    alert('ファイルの読み込みに失敗しました');
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function showSettings() {
-            document.getElementById('settingsPanel').style.display = 'block';
-        }
-
-        function hideSettings() {
-            document.getElementById('settingsPanel').style.display = 'none';
-        }
-
-        function saveSettings() {
-            const rawUrl = document.getElementById('sheetsUrl').value.trim();
-            const useApi = isAppsScriptUrl(rawUrl);
-            const normalizedUrl = useApi ? rawUrl : normalizeSheetsUrl(rawUrl);
-            
-            const settings = {
-                sheetsUrl: normalizedUrl,
-                autoUpdateInterval: document.getElementById('autoUpdateInterval').value
-            };
-            
-            localStorage.setItem('appSettings', JSON.stringify(settings));
-            document.getElementById('sheetsUrl').value = normalizedUrl;
-            setupAutoUpdate();
-            
-            alert(useApi ? '設定を保存しました（双方向同期モード）' : '設定を保存しました（CSV読み込みモード）');
-        }
-
-        function loadSettings() {
-            const settings = localStorage.getItem('appSettings');
-            if (settings) {
-                const parsed = JSON.parse(settings);
-                document.getElementById('sheetsUrl').value = parsed.sheetsUrl || '';
-                document.getElementById('autoUpdateInterval').value = parsed.autoUpdateInterval || '30000';
-            }
-            
-            const history = localStorage.getItem('editHistory');
-            if (history) editHistory = JSON.parse(history);
-        }
-
-        function setupAutoUpdate() {
-            if (autoUpdateTimer) { 
-                clearInterval(autoUpdateTimer); 
-                autoUpdateTimer = null; 
-            }
-            
-            const interval = parseInt(document.getElementById('autoUpdateInterval').value);
-            if (interval > 0) {
-                autoUpdateTimer = setInterval(() => {
-                    const url = document.getElementById('sheetsUrl').value.trim();
-                    if (url) syncFromSheets();
-                }, interval);
-                showSyncIndicator(`自動同期開始 (${interval/1000}秒間隔)`, 'info');
-            }
-        }
-
-        function refreshData() {
-            syncFromSheets();
-        }
-
-        function showError(element, message) {
-            element.textContent = message;
-            element.style.display = 'block';
-            setTimeout(() => { element.style.display = 'none'; }, 3000);
-        }
-
+        // イベントリスナーの設定
         window.onclick = function(event) {
             const editModal = document.getElementById('editModal');
             const historyModal = document.getElementById('historyModal');
@@ -2744,6 +2525,128 @@
                 console.log('Auto-login failed, showing login screen');
             }
         });
+
+        // 必要な関数の追加実装（削除、一括削除、新規追加サーバー送信など）
+        async function sendAddRecordToServer(recordData) {
+            const apiUrl = document.getElementById('sheetsUrl').value.trim();
+            if (!isAppsScriptUrl(apiUrl)) throw new Error('API URLが設定されていません');
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'text/plain;charset=utf-8'
+                },
+                body: JSON.stringify({ action: 'addRecord', record: recordData })
+            });
+            
+            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const result = await response.json();
+            if (result.error) throw new Error(result.error);
+            return result;
+        }
+
+        async function deleteRecord(index) {
+            if (!shouldShowDeleteButton()) { 
+                alert('削除権限がありません'); 
+                return; 
+            }
+            
+            const record = filteredData[index];
+            if (!confirm(`${record.schoolName} のデータを削除しますか？`)) return;
+
+            const apiUrl = document.getElementById('sheetsUrl').value.trim();
+            const usingApi = isAppsScriptUrl(apiUrl);
+
+            try {
+                if (usingApi) {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'text/plain;charset=utf-8'
+                        },
+                        body: JSON.stringify({ action: 'deleteRecord', customerCode: record.customerCode })
+                    });
+                    
+                    if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    const result = await response.json();
+                    if (result.error) throw new Error(result.error);
+                    
+                    showSyncIndicator('サーバーから削除完了', 'success');
+                    await syncFromSheets();
+                } else {
+                    addEditHistory(record.schoolName, 'データ削除', '存在', '削除済み', 'DELETE');
+                    const originalIndex = allData.indexOf(record);
+                    if (originalIndex >= 0) allData.splice(originalIndex, 1);
+                    localStorage.setItem('jukuSystemData', JSON.stringify(allData));
+                    populateAssignedToFilter();
+                    applyAllFilters();
+                    updateLastEditInfo();
+                    alert(`${record.schoolName} をローカルから削除しました`);
+                }
+            } catch (error) {
+                console.error('削除エラー:', error);
+                alert('削除に失敗しました: ' + error.message);
+            }
+        }
+
+        async function bulkDeleteCompleted() {
+            if (!requireAdminAccess('0円案件一括削除')) return;
+            
+            const targets = allData.filter(r => isZeroAmountRecord(r));
+            if (targets.length === 0) { 
+                alert('削除対象（0円案件）がありません'); 
+                return; 
+            }
+
+            const apiUrl = document.getElementById('sheetsUrl').value.trim();
+            const usingApi = isAppsScriptUrl(apiUrl);
+
+            const firstConfirm = confirm(
+                usingApi
+                ? `0円案件 ${targets.length}件を完全削除しますか？\n\n` +
+                  `⚠️ タスク完了による完全削除です。レコード本体と関連する全履歴を削除します。`
+                : `0円案件 ${targets.length}件をローカルから削除しますか？（サーバー連携なし）`
+            );
+            if (!firstConfirm) return;
+            
+            const finalConfirm = confirm('本当に実行しますか？この操作は元に戻せません。');
+            if (!finalConfirm) return;
+
+            try {
+                if (usingApi) {
+                    showSyncIndicator('0円案件を完全削除中...', 'info');
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'text/plain;charset=utf-8'
+                        },
+                        body: JSON.stringify({ action: 'bulkDeleteCompleted' })
+                    });
+                    
+                    if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    const result = await response.json();
+                    if (result.error) throw new Error(result.error);
+                    
+                    showSyncIndicator(`完全削除完了: ${result.deletedCount}件`, 'success');
+                    alert(`完全削除が完了しました（${result.deletedCount}件）`);
+                    await syncFromSheets();
+                } else {
+                    targets.forEach(rec =>
+                        addEditHistory(rec.schoolName, '一括削除(0円)', '存在', '削除済み', 'BULK_DELETE')
+                    );
+                    allData = allData.filter(r => !isZeroAmountRecord(r));
+                    localStorage.setItem('jukuSystemData', JSON.stringify(allData));
+                    populateAssignedToFilter();
+                    applyAllFilters();
+                    updateLastEditInfo();
+                    alert(`${targets.length}件の0円案件をローカルから削除しました`);
+                }
+            } catch (error) {
+                console.error('0円案件削除エラー:', error);
+                showSyncIndicator('削除失敗: ' + error.message, 'error');
+                alert('削除に失敗しました: ' + error.message);
+            }
+        }
     </script>
 </body>
 </html>
