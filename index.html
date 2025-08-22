@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="塾入金管理">
-    <title>塾入金管理システム v2.8 完成版</title>
+    <title>塾入金管理システム v2.9 完成版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
@@ -836,7 +836,7 @@
 
     <div id="loginScreen" class="login-container">
         <div class="login-box">
-            <h2>塾入金管理システム v2.8 完成版</h2>
+            <h2>塾入金管理システム v2.9 完成版</h2>
             <div class="form-group">
                 <label for="username">ユーザーID</label>
                 <input type="text" id="username" placeholder="ユーザーIDを入力">
@@ -854,8 +854,8 @@
         <div class="container">
             <div class="header">
                 <div>
-                    <h1>塾入金管理システム v2.8 <span class="feature-badge">完成版</span></h1>
-                    <div class="version-info">Google連携設定権限開放・履歴最適化・モバイル対応強化版</div>
+                    <h1>塾入金管理システム v2.9 <span class="feature-badge">完成版</span></h1>
+                    <div class="version-info">塾別編集履歴・最終更新表示最適化版</div>
                     <div id="lastEditInfo" style="font-size: 13px; opacity: 0.9; margin-top: 4px;">最終編集: -</div>
                 </div>
                 <div class="user-info">
@@ -1070,7 +1070,7 @@
 
     <script>
         // ========================================
-        // v2.8完成版: Google連携設定権限開放・履歴最適化・モバイル対応強化
+        // v2.9完成版: 塾別編集履歴・最終更新表示最適化
         // ========================================
 
         // 基盤システム機能
@@ -1203,7 +1203,53 @@
         }
 
         // ========================================
-        // 改善: 編集履歴の最終更新時刻表示
+        // 新機能: 塾別編集履歴の最終更新時刻取得システム
+        // ========================================
+
+        // 各塾の編集履歴から最新の日時を取得するマップ
+        let schoolLastEditMap = new Map();
+
+        // 編集履歴マップを構築・更新
+        function buildSchoolLastEditMap() {
+            schoolLastEditMap.clear();
+            
+            if (!editHistory || editHistory.length === 0) return;
+            
+            editHistory.forEach(entry => {
+                if (!entry.schoolName || !entry.editDate) return;
+                
+                const entryTime = new Date(entry.editDate);
+                if (isNaN(entryTime.getTime())) return;
+                
+                const currentLatest = schoolLastEditMap.get(entry.schoolName);
+                if (!currentLatest || entryTime > currentLatest) {
+                    schoolLastEditMap.set(entry.schoolName, entryTime);
+                }
+            });
+        }
+
+        // 特定の塾の最終編集日時を取得
+        function getSchoolLastEditTime(schoolName) {
+            if (!schoolName) return null;
+            return schoolLastEditMap.get(schoolName) || null;
+        }
+
+        // 特定の塾の最終編集日時を表示用にフォーマット
+        function formatSchoolLastEdit(schoolName) {
+            const lastEditTime = getSchoolLastEditTime(schoolName);
+            if (!lastEditTime) return '-';
+            return formatDateTime(lastEditTime.toISOString());
+        }
+
+        // 特定の塾の最終編集日時をモバイル用にフォーマット
+        function formatSchoolLastEditMobile(schoolName) {
+            const lastEditTime = getSchoolLastEditTime(schoolName);
+            if (!lastEditTime) return '-';
+            return formatDateTimeMobile(lastEditTime.toISOString());
+        }
+
+        // ========================================
+        // 改善: 全体の最終編集時刻表示（ヘッダー用）
         // ========================================
 
         function updateLastEditInfo() {
@@ -1508,7 +1554,6 @@
             setupAutoUpdate();
         }
 
-        // ★重要な修正点：Google連携設定を管理者限定から除外
         function updateControlButtonsVisibility() {
             const isAdmin = (currentUser && currentUser.role === 'admin');
             // Google連携設定ボタンを管理者限定リストから除外
@@ -1551,6 +1596,16 @@
             } else {
                 allData = [];
             }
+            
+            // 編集履歴も読み込み
+            const history = localStorage.getItem('editHistory');
+            if (history) {
+                editHistory = JSON.parse(history);
+            }
+            
+            // 編集履歴マップを構築
+            buildSchoolLastEditMap();
+            
             populateAssignedToFilter();
             applyAllFilters();
             updateLastEditInfo();
@@ -1646,6 +1701,7 @@
             renderCardView();
         }
 
+        // ★重要な修正点：テーブル表示で各塾の編集履歴から最終更新を取得
         function renderTableView() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
@@ -1714,8 +1770,9 @@
                 }
                 tdPhone.appendChild(phoneDiv);
 
+                // ★修正：各塾の編集履歴から最終更新を表示
                 const tdLastUpdated = document.createElement('td');
-                tdLastUpdated.textContent = formatDateTime(row.lastUpdated);
+                tdLastUpdated.textContent = formatSchoolLastEdit(row.schoolName);
                 tdLastUpdated.style.fontSize = '0.85em';
                 tdLastUpdated.style.color = '#666';
                 tdLastUpdated.style.whiteSpace = 'nowrap';
@@ -1760,6 +1817,7 @@
             });
         }
 
+        // ★重要な修正点：カード表示で各塾の編集履歴から最終更新を取得
         function renderCardView() {
             const container = document.getElementById('cardContainer');
             container.innerHTML = '';
@@ -1872,6 +1930,7 @@
                 paymentRow.appendChild(paymentLabel);
                 paymentRow.appendChild(paymentValue);
 
+                // ★修正：各塾の編集履歴から最終更新を表示
                 const updateRow = document.createElement('div');
                 updateRow.className = 'card-info-row';
                 
@@ -1882,7 +1941,7 @@
                 const updateValue = document.createElement('span');
                 updateValue.style.fontSize = '0.85em';
                 updateValue.style.color = '#666';
-                updateValue.textContent = formatDateTime(row.lastUpdated);
+                updateValue.textContent = formatSchoolLastEditMobile(row.schoolName);
                 
                 updateRow.appendChild(updateLabel);
                 updateRow.appendChild(updateValue);
@@ -1993,6 +2052,7 @@
             showTempMessage(nearFirst ? '📅 期日が近い順で表示中' : '📅 期日が遠い順で表示中');
         }
 
+        // ★修正：編集履歴ベースの最終更新ソート
         function sortByLastUpdated(newestFirst = true, btn = null) {
             document.querySelectorAll('.controls .btn').forEach(b => b.classList.remove('sort-active'));
             if (btn) btn.classList.add('sort-active');
@@ -2000,21 +2060,18 @@
             const nonZeroRecords = filteredData.filter(row => !isZeroAmountRecord(row));
             const zeroRecords = filteredData.filter(row => isZeroAmountRecord(row));
 
-            nonZeroRecords.sort((a, b) => {
-                const dateA = new Date(a.lastUpdated || '1900-01-01');
-                const dateB = new Date(b.lastUpdated || '1900-01-01');
+            const sortByEditHistory = (a, b) => {
+                const dateA = getSchoolLastEditTime(a.schoolName) || new Date('1900-01-01');
+                const dateB = getSchoolLastEditTime(b.schoolName) || new Date('1900-01-01');
                 return newestFirst ? (dateB - dateA) : (dateA - dateB);
-            });
+            };
 
-            zeroRecords.sort((a, b) => {
-                const dateA = new Date(a.lastUpdated || '1900-01-01');
-                const dateB = new Date(b.lastUpdated || '1900-01-01');
-                return newestFirst ? (dateB - dateA) : (dateA - dateB);
-            });
+            nonZeroRecords.sort(sortByEditHistory);
+            zeroRecords.sort(sortByEditHistory);
 
             filteredData = [...nonZeroRecords, ...zeroRecords];
             renderTable();
-            showTempMessage(newestFirst ? '🕒 更新が新しい順で表示中' : '🕒 更新が古い順で表示中');
+            showTempMessage(newestFirst ? '🕒 編集が新しい順で表示中' : '🕒 編集が古い順で表示中');
         }
 
         function showTempMessage(message) {
@@ -2085,6 +2142,10 @@
                 }
 
                 localStorage.setItem('jukuSystemData', JSON.stringify(allData));
+                
+                // 編集履歴マップを再構築
+                buildSchoolLastEditMap();
+                
                 populateAssignedToFilter();
                 applyAllFilters();
                 updateLastEditInfo();
@@ -2273,6 +2334,10 @@
                         });
                         allData[originalIndex] = formData;
                         localStorage.setItem('jukuSystemData', JSON.stringify(allData));
+                        
+                        // 編集履歴マップを再構築
+                        buildSchoolLastEditMap();
+                        
                         populateAssignedToFilter();
                         applyAllFilters();
                         updateLastEditInfo();
@@ -2285,6 +2350,7 @@
             }
         });
 
+        // ★修正：履歴追加時に編集履歴マップを更新
         function addEditHistory(schoolName, field, oldValue, newValue, action) {
             const historyEntry = {
                 id: Date.now() + Math.random(),
@@ -2298,12 +2364,15 @@
             };
             editHistory.push(historyEntry);
             localStorage.setItem('editHistory', JSON.stringify(editHistory));
+            
+            // 編集履歴マップを再構築
+            buildSchoolLastEditMap();
+            
             updateLastEditInfo(); // 履歴追加時に最終編集情報を更新
         }
 
-        // ★重要な修正点：設定関数から権限チェックを削除
+        // 設定関連の関数
         function showSettings() {
-            // 全ユーザーがGoogle連携設定にアクセス可能
             document.getElementById('settingsPanel').style.display = 'block';
         }
 
@@ -2312,7 +2381,6 @@
         }
 
         function saveSettings() {
-            // 全ユーザーがGoogle連携設定を保存可能
             const rawUrl = document.getElementById('sheetsUrl').value.trim();
             
             if (!isAppsScriptUrl(rawUrl)) {
@@ -2342,6 +2410,8 @@
             const history = localStorage.getItem('editHistory');
             if (history) {
                 editHistory = JSON.parse(history);
+                // 編集履歴マップを構築
+                buildSchoolLastEditMap();
                 updateLastEditInfo(); // 設定読み込み時に最終編集情報を更新
             }
         }
@@ -2392,6 +2462,7 @@
                 localStorage.removeItem('appSettings');
                 allData = [];
                 editHistory = [];
+                schoolLastEditMap.clear(); // マップもクリア
                 currentAssignedToFilter = '';
                 if (autoUpdateTimer) { 
                     clearInterval(autoUpdateTimer); 
@@ -2421,13 +2492,13 @@
                 '進捗': row.progress,
                 '担当': row.assignedTo,
                 '電話番号': row.phone || '',
-                '最終更新': row.lastUpdated || '',
+                '最終更新': formatSchoolLastEdit(row.schoolName), // 編集履歴ベース
                 '備考': row.notes || '',
                 'バージョン': row.version || 1
             })));
             
             XLSX.utils.book_append_sheet(wb, ws, 'データ');
-            XLSX.writeFile(wb, 'juku_data_v28.xlsx');
+            XLSX.writeFile(wb, 'juku_data_v29.xlsx');
         }
 
         // その他のユーティリティ関数
@@ -2437,6 +2508,7 @@
             setTimeout(() => { element.style.display = 'none'; }, 3000);
         }
 
+        // ★修正：テーブルソートでも編集履歴ベースの最終更新を使用
         function sortTable(columnIndex) {
             if (sortColumn === columnIndex) {
                 sortDirection *= -1;
@@ -2472,8 +2544,9 @@
                     
                     return (aOverdue - bOverdue) * sortDirection;
                 } else if (columnIndex === 8) {
-                    aVal = new Date(a.lastUpdated || '1900-01-01');
-                    bVal = new Date(b.lastUpdated || '1900-01-01');
+                    // ★修正：編集履歴ベースの最終更新でソート
+                    aVal = getSchoolLastEditTime(a.schoolName) || new Date('1900-01-01');
+                    bVal = getSchoolLastEditTime(b.schoolName) || new Date('1900-01-01');
                     return (aVal - bVal) * sortDirection;
                 } else {
                     aVal = (a[key] || '').toString();
@@ -2634,6 +2707,10 @@
                     );
                     allData = allData.filter(r => !isZeroAmountRecord(r));
                     localStorage.setItem('jukuSystemData', JSON.stringify(allData));
+                    
+                    // 編集履歴マップを再構築
+                    buildSchoolLastEditMap();
+                    
                     populateAssignedToFilter();
                     applyAllFilters();
                     updateLastEditInfo();
