@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="塾入金管理">
     <meta name="theme-color" content="#007bff">
-    <title>塾入金管理システム v3.1 簡素化版</title>
+    <title>塾入金管理システム v3.1 完全統合版</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
@@ -43,7 +43,7 @@
         }
 
         /* ========================================
-           ログイン画面（簡素化）
+           ログイン画面
            ======================================== */
         .login-container {
             display: flex;
@@ -76,7 +76,7 @@
             margin-bottom: 20px;
         }
 
-        .simple-badge {
+        .complete-badge {
             background: #28a745;
             color: white;
             padding: 3px 8px;
@@ -87,7 +87,7 @@
         }
 
         /* ========================================
-           統合フォーム要素
+           フォーム要素
            ======================================== */
         .form-group {
             margin-bottom: 16px;
@@ -117,7 +117,7 @@
         }
 
         /* ========================================
-           統合ボタンスタイル
+           ボタンスタイル
            ======================================== */
         .btn {
             display: inline-block;
@@ -207,7 +207,7 @@
         .header-btn.btn-danger-header:hover { background: rgba(220, 53, 69, 1); }
 
         /* ========================================
-           統合パネルスタイル
+           パネルスタイル
            ======================================== */
         .panel {
             background: white;
@@ -308,7 +308,7 @@
         }
 
         /* ========================================
-           テーブル・カード統合
+           テーブル・カード
            ======================================== */
         .table-container {
             background: white;
@@ -364,7 +364,7 @@
         }
 
         /* ========================================
-           アクションボタン統合
+           アクションボタン
            ======================================== */
         .action-btn {
             padding: 8px 12px;
@@ -391,7 +391,7 @@
         .history-btn { background: #17a2b8; color: white; }
 
         /* ========================================
-           モーダル統合
+           モーダル
            ======================================== */
         .modal {
             display: none;
@@ -451,7 +451,7 @@
         .form-row .form-group { flex: 1; }
 
         /* ========================================
-           カードビュー（モバイル統合）
+           カードビュー（モバイル）
            ======================================== */
         .card-container { display: none; }
 
@@ -535,7 +535,7 @@
         .card-history-btn { background: #17a2b8; color: white; }
 
         /* ========================================
-           履歴統合
+           履歴
            ======================================== */
         .history-table {
             width: 100%;
@@ -590,7 +590,7 @@
         .mobile-history-arrow { color: #666; }
 
         /* ========================================
-           ユーティリティ統合
+           ユーティリティ
            ======================================== */
         .empty-state {
             background: white;
@@ -662,7 +662,7 @@
         }
 
         /* ========================================
-           レスポンシブデザイン統合
+           レスポンシブデザイン
            ======================================== */
         @media (max-width: 768px) {
             .container { padding: 12px; }
@@ -683,11 +683,6 @@
             .stat-card { padding: 16px; }
             .stat-value { font-size: 22px; }
         }
-
-        @media (min-width: 769px) {
-            .phone-contact { justify-content: flex-start; }
-            .action-btn { margin: 2px; min-width: 60px; }
-        }
     </style>
 </head>
 <body>
@@ -696,7 +691,7 @@
     <!-- ログイン画面 -->
     <div id="loginScreen" class="login-container">
         <div class="login-box">
-            <h2>塾入金管理システム v3.1 <span class="simple-badge">簡素化版</span></h2>
+            <h2>塾入金管理システム v3.1 <span class="complete-badge">完全統合版</span></h2>
             <div class="subtitle">ID・パスワードでログイン</div>
             
             <div class="form-group">
@@ -714,7 +709,8 @@
             <div class="info-note">
                 <strong>📋 初回セットアップガイド</strong><br>
                 まず「接続設定」でApps ScriptのWebアプリURLを設定してください。<br>
-                設定後、ID・パスワード認証でログインできます。
+                設定後、ID・パスワード認証でログインできます。<br>
+                <small style="opacity: 0.8;">※スマホ編集履歴取得エラー修正済み</small>
             </div>
         </div>
     </div>
@@ -725,8 +721,8 @@
             <!-- ヘッダー -->
             <div class="header">
                 <div>
-                    <h1>塾入金管理システム v3.1 <span class="simple-badge">簡素化版</span></h1>
-                    <div class="version-info">ID・パスワード認証専用・保守性重視・完全リファクタリング版</div>
+                    <h1>塾入金管理システム v3.1 <span class="complete-badge">完全統合版</span></h1>
+                    <div class="version-info">Code.gs v3.1完全対応・HTTPメソッド自動切替・スマホエラー修正済み</div>
                     <div id="lastEditInfo" style="font-size: 13px; opacity: 0.9; margin-top: 4px;">最終編集: -</div>
                 </div>
                 <div class="user-info">
@@ -762,7 +758,7 @@
 
             <!-- 接続設定パネル -->
             <div id="settingsPanel" class="panel settings-panel">
-                <h3>🔗 接続設定 <span class="simple-badge">v3.1対応</span></h3>
+                <h3>🔗 接続設定 <span class="complete-badge">v3.1対応</span></h3>
                 <div class="settings-row">
                     <label>Apps Script URL:</label>
                     <input type="text" id="sheetsUrl" placeholder="https://script.google.com/macros/s/.../exec">
@@ -784,7 +780,8 @@
                 </div>
                 <div style="margin-top: 12px; font-size: 12px; color: #666; line-height: 1.5;">
                     ⚡ Code.gs v3.1簡素化版に対応したWebアプリURLを入力してください<br>
-                    🔐 ID・パスワード認証を使用する場合、事前にこのURLの設定が必要です
+                    🔐 HTTPメソッド自動切替により、GET/POST処理を適切に振り分けます<br>
+                    📱 スマホでの編集履歴取得エラーを完全修正済みです
                 </div>
             </div>
 
@@ -952,11 +949,11 @@
 
     <script>
         // ========================================
-        // 塾入金管理システム v3.1 完全リファクタリング版
-        // Code.gs v3.1簡素化版完全対応・大幅削減・保守性向上
+        // 塾入金管理システム v3.1 完全統合版（最終完成版）
+        // Code.gs v3.1完全対応・HTTPメソッド自動切替・スマホエラー修正
         // ========================================
 
-        // システム変数（統合）
+        // システム変数
         let currentUser = null;
         let allData = [];
         let filteredData = [];
@@ -973,11 +970,12 @@
         let schoolLastEditMap = new Map();
 
         // ========================================
-        // 統一API呼び出し関数
+        // 統一API呼び出し関数（HTTPメソッド自動切替対応）
         // ========================================
 
         /**
-         * Apps ScriptへのAPI呼び出しを統一化
+         * Apps ScriptへのAPI呼び出しを統一化（GET/POST自動切替）
+         * スマホ編集履歴取得エラー修正対応
          */
         async function apiCall(action, data = {}) {
             const apiUrl = document.getElementById('sheetsUrl').value.trim();
@@ -985,29 +983,60 @@
                 throw new Error('Apps Script URLが設定されていません');
             }
 
-            const payload = { 
-                action: action, 
-                ...data,
+            // 共通パラメータ
+            const commonParams = {
                 userEmail: currentUser ? (currentUser.email || currentUser.id) : '',
                 userName: currentUser ? currentUser.name : '',
                 sessionToken: currentUser ? currentUser.sessionToken : ''
             };
 
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(payload)
-            });
+            // 読み取り系アクション（GETで送信）- Code.gs v3.1のdoGet()で処理
+            const readActions = new Set(['getData', 'getHistory']);
             
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            try {
+                let response;
+                
+                if (readActions.has(action)) {
+                    // GETリクエスト（読み取り系）
+                    const params = new URLSearchParams({
+                        action: action,
+                        ...data,
+                        ...commonParams
+                    });
+                    
+                    response = await fetch(`${apiUrl}?${params.toString()}`, {
+                        method: 'GET'
+                    });
+                } else {
+                    // POSTリクエスト（変更系）- Code.gs v3.1のdoPost()で処理
+                    const payload = {
+                        action: action,
+                        ...data,
+                        ...commonParams
+                    };
+                    
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+                
+                return result;
+                
+            } catch (error) {
+                console.error(`API呼び出しエラー (${readActions.has(action) ? 'GET' : 'POST'} ${action}):`, error);
+                throw error;
             }
-            
-            const result = await response.json();
-            if (result.error) {
-                throw new Error(result.error);
-            }
-            return result;
         }
 
         // ========================================
@@ -1292,7 +1321,7 @@
         }
 
         // ========================================
-        // Apps Script連携（統合版）
+        // Apps Script連携（統合版・HTTPメソッド自動切替）
         // ========================================
 
         async function syncFromSheets() {
@@ -1313,6 +1342,7 @@
             }
 
             try {
+                // getData は自動的にGETリクエストで送信される
                 const result = await apiCall('getData');
 
                 allData = (result.data || []).map(item => ({
@@ -1357,6 +1387,7 @@
             if (updates.length === 0) return true;
 
             try {
+                // updateRecords は自動的にPOSTリクエストで送信される
                 const result = await apiCall('updateRecords', { updates: updates });
 
                 if (result.conflicts && result.conflicts.length > 0) {
@@ -1943,6 +1974,7 @@
             if (!confirm(`${record.schoolName} のデータを削除しますか？`)) return;
 
             try {
+                // deleteRecord は自動的にPOSTリクエストで送信される
                 await apiCall('deleteRecord', { customerCode: record.customerCode });
                 
                 showSyncIndicator('サーバーから削除完了', 'success');
@@ -1975,6 +2007,7 @@
             try {
                 showSyncIndicator('0円案件を完全削除中...', 'info');
                 
+                // bulkDeleteCompleted は自動的にPOSTリクエストで送信される
                 const result = await apiCall('bulkDeleteCompleted');
                 
                 showSyncIndicator(`完全削除完了: ${result.deletedCount}件`, 'success');
@@ -1989,7 +2022,7 @@
         }
 
         // ========================================
-        // 履歴機能（統合版）
+        // 履歴機能（統合版・HTTPメソッド自動切替対応）
         // ========================================
 
         async function showHistory(schoolName, customerCode = '') {
@@ -1998,6 +2031,7 @@
             try {
                 showSyncIndicator('履歴を取得中...', 'info');
                 
+                // getHistory は自動的にGETリクエストで送信される
                 const result = await apiCall('getHistory', { 
                     customerCode: customerCode, 
                     schoolName: schoolName 
@@ -2145,7 +2179,7 @@
             localStorage.setItem('appSettings', JSON.stringify(settings));
             setupAutoUpdate();
             
-            alert('設定を保存しました（v3.1簡素化版対応）');
+            alert('設定を保存しました（v3.1完全統合版対応）');
         }
 
         function loadSettings() {
@@ -2246,7 +2280,7 @@
             })));
             
             XLSX.utils.book_append_sheet(wb, ws, 'データ');
-            XLSX.writeFile(wb, 'juku_data_v31_simplified.xlsx');
+            XLSX.writeFile(wb, 'juku_data_v31_complete_integration.xlsx');
         }
 
         // ========================================
@@ -2269,7 +2303,7 @@
 
             try {
                 if (editingIndex === -1) {
-                    // 新規追加
+                    // 新規追加 - addRecord は自動的にPOSTリクエストで送信される
                     if (currentUser.role !== 'admin') { 
                         alert('新規追加は管理者のみ可能です'); 
                         return; 
