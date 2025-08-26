@@ -8,14 +8,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="塾入金管理">
     <meta name="theme-color" content="#007bff">
-    <title>塾入金管理システム v3.1 完全統合版</title>
+    <title>塾入金管理システム v3.2 入金自動反映対応版</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <style>
-        /* ========================================
-           基本スタイル・統合版
-           ======================================== */
+        /* 基本スタイル */
         * {
             margin: 0;
             padding: 0;
@@ -42,9 +40,7 @@
             padding: 20px;
         }
 
-        /* ========================================
-           ログイン画面
-           ======================================== */
+        /* ログイン画面 */
         .login-container {
             display: flex;
             justify-content: center;
@@ -86,9 +82,24 @@
             margin-left: 8px;
         }
 
-        /* ========================================
-           フォーム要素
-           ======================================== */
+        .new-badge {
+            background: #ff6b35;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        /* フォーム要素 */
         .form-group {
             margin-bottom: 16px;
         }
@@ -116,9 +127,7 @@
             box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
         }
 
-        /* ========================================
-           ボタンスタイル
-           ======================================== */
+        /* ボタンスタイル */
         .btn {
             display: inline-block;
             padding: 12px 20px;
@@ -150,6 +159,36 @@
         .btn-outline-primary:hover { background: #007bff; color: white; }
         .btn-sm { padding: 6px 12px; font-size: 12px; min-height: 32px; }
 
+        /* 入金処理専用ボタン */
+        .btn-payment {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-payment:hover {
+            background: linear-gradient(135deg, #218838 0%, #1ea085 100%);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-payment:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-payment:hover:before {
+            left: 100%;
+        }
+
         .login-btn { width: 100%; }
 
         .info-note {
@@ -162,9 +201,7 @@
             text-align: center;
         }
 
-        /* ========================================
-           メインコンテンツ
-           ======================================== */
+        /* メインコンテンツ */
         .main-content { display: none; }
 
         .header {
@@ -206,9 +243,7 @@
         .header-btn.btn-danger-header { background: rgba(220, 53, 69, 0.9); }
         .header-btn.btn-danger-header:hover { background: rgba(220, 53, 69, 1); }
 
-        /* ========================================
-           パネルスタイル
-           ======================================== */
+        /* パネルスタイル */
         .panel {
             background: white;
             padding: 24px;
@@ -245,9 +280,7 @@
             font-size: 14px;
         }
 
-        /* ========================================
-           統計・操作
-           ======================================== */
+        /* 統計・操作 */
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -307,9 +340,162 @@
             box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
         }
 
-        /* ========================================
-           テーブル・カード
-           ======================================== */
+        /* 入金処理モーダル */
+        .payment-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            overflow: auto;
+        }
+
+        .payment-modal-content {
+            background-color: white;
+            margin: 3% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #28a745;
+        }
+
+        .payment-header h3 {
+            color: #28a745;
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #28a745;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            background: #f8fff9;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-area:hover {
+            border-color: #20c997;
+            background: #e8fffe;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #17a2b8;
+            background: #e1f5fe;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-upload-btn {
+            background: #28a745;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        .file-upload-btn:hover {
+            background: #218838;
+        }
+
+        .file-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .processing-indicator {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .processing-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #28a745;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        .processing-text {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .result-summary {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .result-success {
+            border-left: 4px solid #28a745;
+        }
+
+        .result-warning {
+            border-left: 4px solid #ffc107;
+        }
+
+        .result-error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .result-stat {
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            background: white;
+        }
+
+        .result-stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .result-stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* テーブル・カード */
         .table-container {
             background: white;
             border-radius: 12px;
@@ -321,7 +507,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 900px;
+            min-width: 1000px;
         }
 
         th {
@@ -351,6 +537,7 @@
         .completed-gray-row { background: #e9ecef !important; color: #6c757d; }
         .completed-gray-row:hover { background: #dee2e6 !important; }
         .amount-display { font-size: 1.1em; font-weight: bold; color: #007bff; }
+        .received-amount-display { font-size: 1.0em; font-weight: bold; color: #28a745; }
 
         .phone-contact {
             display: flex;
@@ -363,9 +550,7 @@
             font-weight: bold;
         }
 
-        /* ========================================
-           アクションボタン
-           ======================================== */
+        /* アクションボタン */
         .action-btn {
             padding: 8px 12px;
             margin: 2px;
@@ -390,9 +575,7 @@
         .delete-btn { background: #dc3545; color: white; }
         .history-btn { background: #17a2b8; color: white; }
 
-        /* ========================================
-           モーダル
-           ======================================== */
+        /* モーダル */
         .modal {
             display: none;
             position: fixed;
@@ -450,9 +633,7 @@
 
         .form-row .form-group { flex: 1; }
 
-        /* ========================================
-           カードビュー（モバイル）
-           ======================================== */
+        /* カードビュー（モバイル） */
         .card-container { display: none; }
 
         .juku-card {
@@ -534,9 +715,7 @@
         .card-edit-btn { background: #ffc107; color: #212529; }
         .card-history-btn { background: #17a2b8; color: white; }
 
-        /* ========================================
-           履歴
-           ======================================== */
+        /* 履歴 */
         .history-table {
             width: 100%;
             border-collapse: collapse;
@@ -589,9 +768,7 @@
         .mobile-history-new { color: #28a745; font-weight: bold; }
         .mobile-history-arrow { color: #666; }
 
-        /* ========================================
-           ユーティリティ
-           ======================================== */
+        /* ユーティリティ */
         .empty-state {
             background: white;
             padding: 60px 20px;
@@ -661,9 +838,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* ========================================
-           レスポンシブデザイン
-           ======================================== */
+        /* レスポンシブデザイン */
         @media (max-width: 768px) {
             .container { padding: 12px; }
             .header { flex-direction: column; text-align: center; padding: 16px; }
@@ -678,6 +853,7 @@
             .history-table { display: none; }
             .mobile-history { display: block; }
             .modal-content { margin: 2% auto; width: 95%; max-height: 90vh; padding: 20px; }
+            .payment-modal-content { margin: 5% auto; width: 95%; padding: 20px; }
             .login-box { margin: 20px; padding: 24px; }
             .stats { grid-template-columns: 1fr 1fr; gap: 12px; }
             .stat-card { padding: 16px; }
@@ -691,7 +867,7 @@
     <!-- ログイン画面 -->
     <div id="loginScreen" class="login-container">
         <div class="login-box">
-            <h2>塾入金管理システム v3.1 <span class="complete-badge">完全統合版</span></h2>
+            <h2>塾入金管理システム v3.2 <span class="complete-badge">入金自動反映対応</span><span class="new-badge">NEW!</span></h2>
             <div class="subtitle">ID・パスワードでログイン</div>
             
             <div class="form-group">
@@ -707,10 +883,10 @@
             <div id="loginError" class="error-message"></div>
             
             <div class="info-note">
-                <strong>📋 初回セットアップガイド</strong><br>
-                まず「接続設定」でApps ScriptのWebアプリURLを設定してください。<br>
-                設定後、ID・パスワード認証でログインできます。<br>
-                <small style="opacity: 0.8;">※スマホ編集履歴取得エラー修正済み</small>
+                <strong>🚀 v3.2 新機能追加</strong><br>
+                <strong>💰 入金Excel自動反映機能</strong>を追加しました！<br>
+                本社からのExcelファイルをアップロードするだけで、未収金額を自動計算・更新します。<br>
+                <small style="opacity: 0.8;">※PC環境でのみ利用可能・全ユーザー対応・月2000件処理対応</small>
             </div>
         </div>
     </div>
@@ -721,8 +897,8 @@
             <!-- ヘッダー -->
             <div class="header">
                 <div>
-                    <h1>塾入金管理システム v3.1 <span class="complete-badge">完全統合版</span></h1>
-                    <div class="version-info">Code.gs v3.1完全対応・HTTPメソッド自動切替・スマホエラー修正済み</div>
+                    <h1>塾入金管理システム v3.2 <span class="complete-badge">入金自動反映対応</span></h1>
+                    <div class="version-info">入金Excel自動反映機能・PC環境専用・月2000件処理対応・1時間→10分短縮</div>
                     <div id="lastEditInfo" style="font-size: 13px; opacity: 0.9; margin-top: 4px;">最終編集: -</div>
                 </div>
                 <div class="user-info">
@@ -747,6 +923,10 @@
                     <div class="stat-label">総未収金額</div>
                 </div>
                 <div class="stat-card">
+                    <div class="stat-value" id="totalReceived">¥0</div>
+                    <div class="stat-label">総入金額</div>
+                </div>
+                <div class="stat-card">
                     <div class="stat-value" id="overdueCount">0</div>
                     <div class="stat-label">期限超過</div>
                 </div>
@@ -758,7 +938,7 @@
 
             <!-- 接続設定パネル -->
             <div id="settingsPanel" class="panel settings-panel">
-                <h3>🔗 接続設定 <span class="complete-badge">v3.1対応</span></h3>
+                <h3>🔗 接続設定 <span class="complete-badge">v3.2対応</span></h3>
                 <div class="settings-row">
                     <label>Apps Script URL:</label>
                     <input type="text" id="sheetsUrl" placeholder="https://script.google.com/macros/s/.../exec">
@@ -779,9 +959,9 @@
                     <span id="syncStatus" style="margin-left: 15px; font-weight: 500;"></span>
                 </div>
                 <div style="margin-top: 12px; font-size: 12px; color: #666; line-height: 1.5;">
-                    ⚡ Code.gs v3.1簡素化版に対応したWebアプリURLを入力してください<br>
+                    ⚡ Code.gs v3.2入金自動反映対応版に対応したWebアプリURLを入力してください<br>
                     🔐 HTTPメソッド自動切替により、GET/POST処理を適切に振り分けます<br>
-                    📱 スマホでの編集履歴取得エラーを完全修正済みです
+                    💰 入金Excel自動反映機能が利用可能になります（PC環境のみ）
                 </div>
             </div>
 
@@ -790,6 +970,12 @@
                 <h3>🎛️ 操作メニュー</h3>
                 <div class="control-buttons">
                     <button class="btn btn-primary" onclick="showAddModal()" id="btnAddRecord">➕ 新規追加</button>
+                    
+                    <!-- 入金処理ボタン（PC環境でのみ表示） -->
+                    <button class="btn btn-payment" onclick="showPaymentModal()" id="btnPaymentProcess" style="display: none;">
+                        💰 入金Excel自動反映 <span class="new-badge">NEW!</span>
+                    </button>
+                    
                     <button class="btn btn-success" onclick="exportToExcel()" id="btnExportExcel">📊 Excelエクスポート</button>
                     <button class="btn btn-info" onclick="showSettings()">⚙️ 接続設定</button>
                     
@@ -826,14 +1012,15 @@
                         <tr>
                             <th onclick="sortTable(0)">請求先名</th>
                             <th onclick="sortTable(1)">未収金額</th>
-                            <th onclick="sortTable(2)">期日</th>
-                            <th onclick="sortTable(3)">超過日数</th>
-                            <th onclick="sortTable(4)">入金予定日</th>
-                            <th onclick="sortTable(5)">進捗</th>
-                            <th onclick="sortTable(6)">担当</th>
-                            <th onclick="sortTable(7)">電話番号</th>
-                            <th onclick="sortTable(8)">最終更新</th>
-                            <th onclick="sortTable(9)">備考</th>
+                            <th onclick="sortTable(2)">入金額</th>
+                            <th onclick="sortTable(3)">期日</th>
+                            <th onclick="sortTable(4)">超過日数</th>
+                            <th onclick="sortTable(5)">入金予定日</th>
+                            <th onclick="sortTable(6)">進捗</th>
+                            <th onclick="sortTable(7)">担当</th>
+                            <th onclick="sortTable(8)">電話番号</th>
+                            <th onclick="sortTable(9)">最終更新</th>
+                            <th onclick="sortTable(10)">備考</th>
                             <th>操作</th>
                         </tr>
                     </thead>
@@ -843,6 +1030,59 @@
 
             <!-- カード表示（モバイル） -->
             <div id="cardContainer" class="card-container"></div>
+        </div>
+    </div>
+
+    <!-- 入金処理モーダル（新機能） -->
+    <div id="paymentModal" class="payment-modal">
+        <div class="payment-modal-content">
+            <div class="payment-header">
+                <h3>💰 入金Excel自動反映</h3>
+                <span class="close" onclick="closePaymentModal()">&times;</span>
+            </div>
+            
+            <div class="file-upload-area" id="fileUploadArea">
+                <div style="font-size: 48px; margin-bottom: 15px;">📊</div>
+                <button class="file-upload-btn" onclick="document.getElementById('excelFileInput').click()">
+                    Excelファイルを選択
+                </button>
+                <div style="color: #666; font-size: 14px; line-height: 1.5;">
+                    または、ここにファイルをドラッグ&ドロップ<br>
+                    <small>対応形式: .xlsx（本社からの入金結果Excel）</small>
+                </div>
+                <input type="file" id="excelFileInput" class="file-input" accept=".xlsx" onchange="handleFileSelect(this.files[0])">
+                <div id="fileInfo" class="file-info" style="display: none;"></div>
+            </div>
+            
+            <div class="processing-indicator" id="processingIndicator">
+                <div class="processing-spinner"></div>
+                <div class="processing-text">入金データを処理中...</div>
+                <div style="font-size: 14px; color: #666; margin-top: 10px;">
+                    大量データの場合、数分かかる場合があります
+                </div>
+            </div>
+            
+            <div class="result-summary" id="resultSummary">
+                <div class="result-stats" id="resultStats"></div>
+                <div style="font-weight: bold; margin-bottom: 10px;" id="resultMessage"></div>
+            </div>
+            
+            <div style="margin-top: 25px; text-align: right;">
+                <button type="button" class="btn btn-secondary" onclick="closePaymentModal()" style="margin-right: 12px;">閉じる</button>
+                <button type="button" class="btn btn-success" onclick="processPaymentFile()" id="btnProcessPayment" disabled>💰 入金処理実行</button>
+            </div>
+            
+            <div style="margin-top: 20px; font-size: 13px; color: #666; line-height: 1.5;">
+                <p><strong>📋 処理ルール:</strong></p>
+                <ul style="margin-left: 20px;">
+                    <li>得意先コードで照合し、塾名（得意先名１ or 得意先名１+２）で最終確認</li>
+                    <li>未収金額から入金額を減算（マイナスの場合は0円）</li>
+                    <li>残額がある場合はP列に入金額を記録</li>
+                    <li>重複データ（伝票№+得意先コード+塾名+入金額）はスキップ</li>
+                    <li>得意先コードまたは塾名が不一致のデータは無視</li>
+                    <li>処理結果は「入金処理履歴」シートに記録</li>
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -904,6 +1144,10 @@
                         <label>電話番号</label>
                         <input type="tel" id="editPhone" placeholder="03-1234-5678">
                     </div>
+                    <div class="form-group">
+                        <label>入金額（自動計算済み）</label>
+                        <input type="text" id="editReceivedAmount" placeholder="0" readonly style="background: #f8f9fa;">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>備考</label>
@@ -949,8 +1193,8 @@
 
     <script>
         // ========================================
-        // 塾入金管理システム v3.1 完全統合版（最終完成版）
-        // Code.gs v3.1完全対応・HTTPメソッド自動切替・スマホエラー修正
+        // 塾入金管理システム v3.2 入金Excel自動反映対応版
+        // PC環境専用・全ユーザー権限・月2000件処理対応・セキュリティ強化
         // ========================================
 
         // システム変数
@@ -968,36 +1212,54 @@
         let currentAssignedToFilter = '';
         let syncing = false;
         let schoolLastEditMap = new Map();
+        let selectedPaymentFile = null;
 
         // ========================================
-        // 統一API呼び出し関数（HTTPメソッド自動切替対応）
+        // デバイス判定機能（PC環境専用制限）
         // ========================================
 
-        /**
-         * Apps ScriptへのAPI呼び出しを統一化（GET/POST自動切替）
-         * スマホ編集履歴取得エラー修正対応
-         */
+        function isPCEnvironment() {
+            const userAgent = navigator.userAgent;
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+            const isLargeScreen = window.innerWidth >= 1024;
+            return !isMobile && isLargeScreen;
+        }
+
+        function updatePaymentButtonVisibility() {
+            const paymentBtn = document.getElementById('btnPaymentProcess');
+            if (paymentBtn) {
+                paymentBtn.style.display = isPCEnvironment() ? '' : 'none';
+            }
+        }
+
+        // ========================================
+        // 統一API呼び出し関数（セッション管理対応）
+        // ========================================
+
         async function apiCall(action, data = {}) {
             const apiUrl = document.getElementById('sheetsUrl').value.trim();
             if (!apiUrl || !isAppsScriptUrl(apiUrl)) {
                 throw new Error('Apps Script URLが設定されていません');
             }
 
-            // 共通パラメータ
+            if (!currentUser || !currentUser.sessionToken) {
+                if (action !== 'authenticate') {
+                    throw new Error('認証セッションがありません。再ログインしてください。');
+                }
+            }
+
             const commonParams = {
+                sessionToken: currentUser ? currentUser.sessionToken : '',
                 userEmail: currentUser ? (currentUser.email || currentUser.id) : '',
-                userName: currentUser ? currentUser.name : '',
-                sessionToken: currentUser ? currentUser.sessionToken : ''
+                userName: currentUser ? currentUser.name : ''
             };
 
-            // 読み取り系アクション（GETで送信）- Code.gs v3.1のdoGet()で処理
             const readActions = new Set(['getData', 'getHistory']);
             
             try {
                 let response;
                 
                 if (readActions.has(action)) {
-                    // GETリクエスト（読み取り系）
                     const params = new URLSearchParams({
                         action: action,
                         ...data,
@@ -1008,7 +1270,6 @@
                         method: 'GET'
                     });
                 } else {
-                    // POSTリクエスト（変更系）- Code.gs v3.1のdoPost()で処理
                     const payload = {
                         action: action,
                         ...data,
@@ -1028,6 +1289,9 @@
                 
                 const result = await response.json();
                 if (result.error) {
+                    if (result.error.includes('認証セッション')) {
+                        logout();
+                    }
                     throw new Error(result.error);
                 }
                 
@@ -1040,12 +1304,9 @@
         }
 
         // ========================================
-        // 認証システム（Code.gs v3.1対応）
+        // 認証システム
         // ========================================
 
-        /**
-         * ID・パスワードログイン（サーバーサイド認証）
-         */
         async function login() {
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
@@ -1088,9 +1349,6 @@
             }
         }
 
-        /**
-         * メイン画面表示
-         */
         function showMainScreen() {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainScreen').style.display = 'block';
@@ -1099,14 +1357,12 @@
             document.getElementById('currentUserRole').textContent = currentUser.role === 'admin' ? '管理者' : '担当者';
             
             updateControlButtonsVisibility();
+            updatePaymentButtonVisibility();
             loadData();
             loadSettings();
             setupAutoUpdate();
         }
 
-        /**
-         * ログアウト
-         */
         function logout() {
             currentUser = null;
             localStorage.removeItem('currentUser');
@@ -1129,7 +1385,7 @@
         }
 
         // ========================================
-        // ユーティリティ関数（統合）
+        // ユーティリティ関数
         // ========================================
 
         function parseAmount(value) {
@@ -1197,9 +1453,8 @@
 
         function calculateOverdueDays(dueDate) {
             if (!dueDate) return null;
-            const due = new Date(dueDate);
+            const due = new Date(dueDate + 'T00:00:00');
             const today = new Date();
-            due.setHours(0, 0, 0, 0);
             today.setHours(0, 0, 0, 0);
             const diffTime = today - due;
             return Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -1245,7 +1500,161 @@
         }
 
         // ========================================
-        // データ管理（統合）
+        // 入金Excel処理機能（メイン機能）
+        // ========================================
+
+        function showPaymentModal() {
+            document.getElementById('paymentModal').style.display = 'block';
+            resetPaymentModalState();
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+            resetPaymentModalState();
+        }
+
+        function resetPaymentModalState() {
+            selectedPaymentFile = null;
+            document.getElementById('excelFileInput').value = '';
+            document.getElementById('fileInfo').style.display = 'none';
+            document.getElementById('processingIndicator').style.display = 'none';
+            document.getElementById('resultSummary').style.display = 'none';
+            document.getElementById('btnProcessPayment').disabled = true;
+            document.getElementById('btnProcessPayment').textContent = 'Excelファイルを選択';
+        }
+
+        function handleFileSelect(file) {
+            if (!file) return;
+            
+            if (!file.name.toLowerCase().endsWith('.xlsx')) {
+                alert('Excelファイル（.xlsx）を選択してください');
+                document.getElementById('excelFileInput').value = '';
+                selectedPaymentFile = null;
+                document.getElementById('btnProcessPayment').disabled = true;
+                document.getElementById('btnProcessPayment').textContent = 'Excelファイルを選択';
+                return;
+            }
+            
+            selectedPaymentFile = file;
+            
+            const fileInfo = document.getElementById('fileInfo');
+            fileInfo.innerHTML = `
+                <strong>選択されたファイル:</strong> ${file.name}<br>
+                <strong>サイズ:</strong> ${(file.size / 1024).toFixed(1)} KB<br>
+                <strong>更新日時:</strong> ${new Date(file.lastModified).toLocaleString('ja-JP')}
+            `;
+            fileInfo.style.display = 'block';
+            
+            document.getElementById('btnProcessPayment').disabled = false;
+            document.getElementById('btnProcessPayment').textContent = '💰 入金処理実行';
+        }
+
+        async function processPaymentFile() {
+            if (!selectedPaymentFile) {
+                alert('ファイルを選択してください');
+                return;
+            }
+            
+            try {
+                document.getElementById('processingIndicator').style.display = 'block';
+                document.getElementById('resultSummary').style.display = 'none';
+                document.getElementById('btnProcessPayment').disabled = true;
+                
+                showSyncIndicator('入金データ読み込み中...', 'info');
+                
+                const arrayBuffer = await selectedPaymentFile.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                const sheetName = 'Sheet1';
+                const ws = workbook.Sheets[sheetName];
+                
+                if (!ws) {
+                    throw new Error(`指定されたシート「${sheetName}」が見つかりません。`);
+                }
+                
+                const jsonData = XLSX.utils.sheet_to_json(ws, { header: 1, range: 1 });
+                
+                if (!jsonData || jsonData.length === 0) {
+                    throw new Error('データがありません（Excelの2行目以降にデータが必要です）');
+                }
+
+                const headerRow = XLSX.utils.sheet_to_json(ws, { header: 1, range: 0, raw: false })[0];
+                const finalJsonData = jsonData.map(row => {
+                    const obj = {};
+                    headerRow.forEach((header, index) => {
+                        obj[header] = row[index];
+                    });
+                    return obj;
+                });
+                
+                showSyncIndicator('入金データ処理中...', 'info');
+                
+                const result = await apiCall('processPaymentExcel', { excelData: finalJsonData });
+                
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+                
+                displayProcessingResults(result);
+                showSyncIndicator('入金処理が完了しました', 'success');
+                await syncFromSheets();
+                
+            } catch (error) {
+                console.error('入金処理エラー:', error);
+                showSyncIndicator('入金処理中にエラーが発生しました', 'error');
+                alert('入金処理中にエラーが発生しました: ' + error.message);
+            } finally {
+                document.getElementById('processingIndicator').style.display = 'none';
+                document.getElementById('btnProcessPayment').disabled = false;
+                document.getElementById('btnProcessPayment').textContent = '💰 入金処理実行';
+            }
+        }
+
+        function displayProcessingResults(result) {
+            const summary = result.summary || {};
+            const message = result.message || '';
+            
+            const resultStats = document.getElementById('resultStats');
+            const resultMessage = document.getElementById('resultMessage');
+            const resultSummary = document.getElementById('resultSummary');
+            
+            resultStats.innerHTML = `
+                <div class="result-stat">
+                    <div class="result-stat-value" style="color: #28a745;">${summary.successCount || 0}</div>
+                    <div class="result-stat-label">処理成功</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value" style="color: #6c757d;">${summary.duplicateCount || 0}</div>
+                    <div class="result-stat-label">重複スキップ</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value" style="color: #ffc107;">${summary.ignoredCodeMismatch || 0}</div>
+                    <div class="result-stat-label">コード不一致</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value" style="color: #dc3545;">${summary.ignoredNameMismatch || 0}</div>
+                    <div class="result-stat-label">塾名不一致</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value" style="color: #007bff;">¥${(summary.totalAmount || 0).toLocaleString()}</div>
+                    <div class="result-stat-label">処理金額合計</div>
+                </div>
+            `;
+            
+            resultMessage.textContent = message;
+            
+            if (summary.successCount > 0) {
+                resultSummary.className = 'result-summary result-success';
+            } else if (summary.ignoredCodeMismatch > 0 || summary.ignoredNameMismatch > 0) {
+                resultSummary.className = 'result-summary result-warning';
+            } else {
+                resultSummary.className = 'result-summary result-error';
+            }
+            
+            resultSummary.style.display = 'block';
+        }
+
+        // ========================================
+        // データ管理
         // ========================================
 
         function buildSchoolLastEditMap() {
@@ -1320,13 +1729,9 @@
             updateLastEditInfo();
         }
 
-        // ========================================
-        // Apps Script連携（統合版・HTTPメソッド自動切替）
-        // ========================================
-
         async function syncFromSheets() {
             if (syncing) return;
-            if (document.getElementById('editModal').style.display === 'block') {
+            if (document.getElementById('editModal').style.display === 'block' || document.getElementById('paymentModal').style.display === 'block') {
                 const status = document.getElementById('syncStatus');
                 if (status) {
                     status.textContent = '編集中のため同期待機';
@@ -1342,7 +1747,6 @@
             }
 
             try {
-                // getData は自動的にGETリクエストで送信される
                 const result = await apiCall('getData');
 
                 allData = (result.data || []).map(item => ({
@@ -1354,6 +1758,7 @@
                     progress: item.progress || '未対応',
                     assignedTo: item.assignedTo || '',
                     phone: item.phone || '',
+                    receivedAmount: parseAmount(item.receivedAmount || 0),
                     notes: item.notes || '',
                     lastUpdated: item.lastUpdated || '',
                     version: item.version || 1
@@ -1387,7 +1792,6 @@
             if (updates.length === 0) return true;
 
             try {
-                // updateRecords は自動的にPOSTリクエストで送信される
                 const result = await apiCall('updateRecords', { updates: updates });
 
                 if (result.conflicts && result.conflicts.length > 0) {
@@ -1422,7 +1826,7 @@
         }
 
         // ========================================
-        // フィルタリング・検索・ソート（統合版）
+        // フィルタリング・検索・ソート
         // ========================================
 
         function applyAllFilters() {
@@ -1491,8 +1895,8 @@
             const zeroRecords = filteredData.filter(row => isZeroAmountRecord(row));
 
             const sortFn = (a, b) => {
-                const dateA = a.dueDate ? new Date(a.dueDate) : new Date('2099-12-31');
-                const dateB = b.dueDate ? new Date(b.dueDate) : new Date('2099-12-31');
+                const dateA = a.dueDate ? new Date(a.dueDate + 'T00:00:00') : new Date('2099-12-31');
+                const dateB = b.dueDate ? new Date(b.dueDate + 'T00:00:00') : new Date('2099-12-31');
                 return nearFirst ? (dateA - dateB) : (dateB - dateA);
             };
 
@@ -1549,7 +1953,7 @@
                 sortDirection = 1;
             }
 
-            const sortKeys = ['schoolName', 'amount', 'dueDate', null, 'paymentDate', 'progress', 'assignedTo', 'phone', 'lastUpdated', 'notes'];
+            const sortKeys = ['schoolName', 'amount', 'receivedAmount', 'dueDate', null, 'paymentDate', 'progress', 'assignedTo', 'phone', 'lastUpdated', 'notes'];
             const key = sortKeys[columnIndex];
 
             const nonZeroRecords = filteredData.filter(row => !isZeroAmountRecord(row));
@@ -1558,15 +1962,15 @@
             const sortFunction = (a, b) => {
                 let aVal, bVal;
 
-                if (columnIndex === 1) {
-                    aVal = parseAmount(a.amount) || 0;
-                    bVal = parseAmount(b.amount) || 0;
+                if (columnIndex === 1 || columnIndex === 2) {
+                    aVal = parseAmount(a[key]) || 0;
+                    bVal = parseAmount(b[key]) || 0;
                     return (aVal - bVal) * sortDirection;
-                } else if (columnIndex === 2 || columnIndex === 4) {
-                    aVal = new Date(a[key] || '1900-01-01');
-                    bVal = new Date(b[key] || '1900-01-01');
+                } else if (columnIndex === 3 || columnIndex === 5) {
+                    aVal = new Date(a[key] + 'T00:00:00' || '1900-01-01T00:00:00');
+                    bVal = new Date(b[key] + 'T00:00:00' || '1900-01-01T00:00:00');
                     return (aVal - bVal) * sortDirection;
-                } else if (columnIndex === 3) {
+                } else if (columnIndex === 4) {
                     const aOverdue = calculateOverdueDays(a.dueDate);
                     const bOverdue = calculateOverdueDays(b.dueDate);
                     
@@ -1575,7 +1979,7 @@
                     if (bOverdue === null) return -sortDirection;
                     
                     return (aOverdue - bOverdue) * sortDirection;
-                } else if (columnIndex === 8) {
+                } else if (columnIndex === 9) {
                     aVal = a.lastUpdated ? new Date(a.lastUpdated) : new Date('1900-01-01');
                     bVal = b.lastUpdated ? new Date(b.lastUpdated) : new Date('1900-01-01');
                     return (aVal - bVal) * sortDirection;
@@ -1593,7 +1997,7 @@
         }
 
         // ========================================
-        // UI表示（統合版）
+        // UI表示
         // ========================================
 
         function updateEmptyState() {
@@ -1638,7 +2042,6 @@
                     tr.classList.add('overdue-pink-row');
                 }
 
-                // セル作成ヘルパー
                 const createCell = (content, className = '') => {
                     const td = document.createElement('td');
                     if (typeof content === 'string') {
@@ -1652,9 +2055,9 @@
 
                 tr.appendChild(createCell(row.schoolName || ''));
                 tr.appendChild(createCell('¥' + (parseAmount(row.amount) || 0).toLocaleString(), 'amount-display'));
+                tr.appendChild(createCell('¥' + (parseAmount(row.receivedAmount) || 0).toLocaleString(), 'received-amount-display'));
                 tr.appendChild(createCell(isZeroAmount ? '-' : (row.dueDate || '')));
 
-                // 超過日数セル
                 const overdueCell = document.createElement('td');
                 if (isZeroAmount || overdueDays === null || overdueDays <= 0) {
                     overdueCell.textContent = '-';
@@ -1668,7 +2071,6 @@
                 tr.appendChild(createCell(row.progress || ''));
                 tr.appendChild(createCell(row.assignedTo || ''));
 
-                // 電話番号セル
                 const phoneCell = document.createElement('td');
                 const phoneDiv = document.createElement('div');
                 phoneDiv.className = 'phone-contact';
@@ -1696,7 +2098,6 @@
                 phoneCell.appendChild(phoneDiv);
                 tr.appendChild(phoneCell);
 
-                // 最終更新セル
                 const lastUpdatedCell = createCell(row.lastUpdated ? formatDateTime(row.lastUpdated) : '-');
                 lastUpdatedCell.style.fontSize = '0.85em';
                 lastUpdatedCell.style.color = '#666';
@@ -1705,7 +2106,6 @@
 
                 tr.appendChild(createCell(row.notes || ''));
 
-                // アクションセル
                 const actionsCell = document.createElement('td');
                 
                 const editBtn = document.createElement('button');
@@ -1750,7 +2150,6 @@
                     card.classList.add('overdue-pink');
                 }
 
-                // カードヘッダー
                 const header = document.createElement('div');
                 header.className = 'card-header';
                 
@@ -1765,7 +2164,6 @@
                 header.appendChild(schoolName);
                 header.appendChild(amount);
 
-                // 情報行作成ヘルパー
                 const createInfoRow = (label, value, extra = null) => {
                     const row = document.createElement('div');
                     row.className = 'card-info-row';
@@ -1788,7 +2186,6 @@
                     return row;
                 };
 
-                // 期日行
                 const dueDateValue = isZeroAmount ? '-' : (row.dueDate || '未設定');
                 const overdueSpan = document.createElement('span');
                 overdueSpan.className = 'card-overdue';
@@ -1806,7 +2203,6 @@
                 
                 const dueDateRow = createInfoRow('期日:', dueDateValue, overdueSpan);
 
-                // 担当・進捗行
                 const assignValue = row.assignedTo || '';
                 const progressValue = `進捗: ${row.progress || ''}`;
                 const assignRow = createInfoRow('担当:', assignValue);
@@ -1814,7 +2210,6 @@
                 progressEl.textContent = progressValue;
                 assignRow.appendChild(progressEl);
 
-                // 電話行
                 const phoneValue = document.createElement('span');
                 if (isIOS() && currentUser && currentUser.role === 'staff' && row.phone) {
                     const phoneLink = document.createElement('a');
@@ -1831,20 +2226,19 @@
                 const phoneRow = createInfoRow('電話:', phoneValue);
 
                 const paymentRow = createInfoRow('入金予定:', row.paymentDate || '未設定');
+                const receivedAmountRow = createInfoRow('入金額:', '¥' + (parseAmount(row.receivedAmount) || 0).toLocaleString());
 
                 const updateValue = row.lastUpdated ? formatDateTimeMobile(row.lastUpdated) : '-';
                 const updateRow = createInfoRow('最終更新:', updateValue);
                 updateRow.querySelector('span:last-child').style.fontSize = '0.85em';
                 updateRow.querySelector('span:last-child').style.color = '#666';
 
-                // 備考行（条件付き）
                 let notesRow = null;
                 if (row.notes) {
                     const notesText = row.notes.length > 30 ? row.notes.substring(0, 30) + '...' : row.notes;
                     notesRow = createInfoRow('備考:', notesText);
                 }
 
-                // アクション
                 const actions = document.createElement('div');
                 actions.className = 'card-actions';
 
@@ -1875,12 +2269,12 @@
                 histBtn.addEventListener('click', () => showHistory(row.schoolName, row.customerCode));
                 actions.appendChild(histBtn);
 
-                // カード組み立て
                 card.appendChild(header);
                 card.appendChild(dueDateRow);
                 card.appendChild(assignRow);
                 card.appendChild(phoneRow);
                 card.appendChild(paymentRow);
+                card.appendChild(receivedAmountRow);
                 card.appendChild(updateRow);
                 if (notesRow) card.appendChild(notesRow);
                 card.appendChild(actions);
@@ -1895,21 +2289,23 @@
             
             const total = activeData.length;
             const totalAmount = activeData.reduce((sum, row) => sum + (parseAmount(row.amount) || 0), 0);
-            const overdue = activeData.filter(row => row.dueDate && new Date(row.dueDate) < now).length;
+            const totalReceived = allData.reduce((sum, row) => sum + (parseAmount(row.receivedAmount) || 0), 0);
+            const overdue = activeData.filter(row => row.dueDate && calculateOverdueDays(row.dueDate) > 0).length;
             const dueSoon = activeData.filter(row => {
                 if (!row.dueDate) return false;
-                const diff = (new Date(row.dueDate) - now) / (1000 * 60 * 60 * 24);
-                return diff >= 0 && diff <= 7;
+                const diff = (new Date(row.dueDate + 'T00:00:00') - now) / (1000 * 60 * 60 * 24);
+                return diff < 0 && diff >= -7;
             }).length;
 
             document.getElementById('totalRecords').textContent = total;
             document.getElementById('totalAmount').textContent = `¥${totalAmount.toLocaleString()}`;
+            document.getElementById('totalReceived').textContent = `¥${totalReceived.toLocaleString()}`;
             document.getElementById('overdueCount').textContent = overdue;
             document.getElementById('dueSoonCount').textContent = dueSoon;
         }
 
         // ========================================
-        // 編集・追加・削除機能（統合版）
+        // 編集・追加・削除機能
         // ========================================
 
         function showAddModal() {
@@ -1918,6 +2314,7 @@
             document.getElementById('modalTitle').textContent = '新規追加';
             document.getElementById('editForm').reset();
             document.getElementById('editProgress').value = '未対応';
+            document.getElementById('editReceivedAmount').value = '0';
             setFieldPermissions();
             document.getElementById('editModal').style.display = 'block';
         }
@@ -1934,6 +2331,7 @@
             document.getElementById('editProgress').value = record.progress || '未対応';
             document.getElementById('editAssignedTo').value = record.assignedTo || '';
             document.getElementById('editPhone').value = record.phone || '';
+            document.getElementById('editReceivedAmount').value = (record.receivedAmount || '0').toString();
             document.getElementById('editNotes').value = record.notes || '';
             
             setFieldPermissions();
@@ -1941,6 +2339,8 @@
         }
 
         function setFieldPermissions() {
+            document.getElementById('editReceivedAmount').disabled = true;
+
             const baseFields = ['editSchoolName', 'editAmount', 'editDueDate', 'editAssignedTo', 'editPhone'];
             
             if (currentUser && currentUser.role === 'staff') {
@@ -1974,12 +2374,9 @@
             if (!confirm(`${record.schoolName} のデータを削除しますか？`)) return;
 
             try {
-                // deleteRecord は自動的にPOSTリクエストで送信される
                 await apiCall('deleteRecord', { customerCode: record.customerCode });
-                
                 showSyncIndicator('サーバーから削除完了', 'success');
                 await syncFromSheets();
-
             } catch (error) {
                 console.error('削除エラー:', error);
                 alert('削除に失敗しました: ' + error.message);
@@ -2006,14 +2403,10 @@
 
             try {
                 showSyncIndicator('0円案件を完全削除中...', 'info');
-                
-                // bulkDeleteCompleted は自動的にPOSTリクエストで送信される
                 const result = await apiCall('bulkDeleteCompleted');
-                
                 showSyncIndicator(`完全削除完了: ${result.deletedCount}件`, 'success');
                 alert(`完全削除が完了しました（${result.deletedCount}件）`);
                 await syncFromSheets();
-
             } catch (error) {
                 console.error('0円案件削除エラー:', error);
                 showSyncIndicator('削除失敗: ' + error.message, 'error');
@@ -2022,7 +2415,7 @@
         }
 
         // ========================================
-        // 履歴機能（統合版・HTTPメソッド自動切替対応）
+        // 履歴機能
         // ========================================
 
         async function showHistory(schoolName, customerCode = '') {
@@ -2030,16 +2423,12 @@
             
             try {
                 showSyncIndicator('履歴を取得中...', 'info');
-                
-                // getHistory は自動的にGETリクエストで送信される
                 const result = await apiCall('getHistory', { 
                     customerCode: customerCode, 
                     schoolName: schoolName 
                 });
-                
                 editHistory = result.history || [];
                 showSyncIndicator(`履歴取得完了 (${editHistory.length}件)`, 'success');
-                
             } catch (error) {
                 console.error('履歴取得エラー:', error);
                 showSyncIndicator('履歴取得に失敗しました', 'error');
@@ -2064,7 +2453,6 @@
                 return historyNewestFirst ? dateB - dateA : dateA - dateB;
             });
             
-            // デスクトップ表示
             sortedHistory.forEach(entry => {
                 const tr = document.createElement('tr');
                 
@@ -2083,7 +2471,6 @@
                 tbody.appendChild(tr);
             });
 
-            // モバイル表示
             sortedHistory.forEach(entry => {
                 const item = document.createElement('div');
                 item.className = 'mobile-history-item';
@@ -2152,7 +2539,7 @@
         }
 
         // ========================================
-        // 設定・その他（統合版）
+        // 設定・その他
         // ========================================
 
         function showSettings() {
@@ -2178,8 +2565,7 @@
             
             localStorage.setItem('appSettings', JSON.stringify(settings));
             setupAutoUpdate();
-            
-            alert('設定を保存しました（v3.1完全統合版対応）');
+            alert('設定を保存しました（v3.2入金自動反映対応）');
         }
 
         function loadSettings() {
@@ -2269,6 +2655,7 @@
                 '得意先コード': row.customerCode || '',
                 '請求先名': row.schoolName,
                 '未収金額': parseAmount(row.amount),
+                '入金額': parseAmount(row.receivedAmount),
                 '期日': row.dueDate,
                 '入金予定日': row.paymentDate || '',
                 '進捗': row.progress,
@@ -2280,7 +2667,7 @@
             })));
             
             XLSX.utils.book_append_sheet(wb, ws, 'データ');
-            XLSX.writeFile(wb, 'juku_data_v31_complete_integration.xlsx');
+            XLSX.writeFile(wb, 'juku_data_v32_payment_integrated.xlsx');
         }
 
         // ========================================
@@ -2298,12 +2685,12 @@
                 progress: document.getElementById('editProgress').value,
                 assignedTo: document.getElementById('editAssignedTo').value,
                 phone: document.getElementById('editPhone').value,
+                receivedAmount: parseAmount(document.getElementById('editReceivedAmount').value),
                 notes: document.getElementById('editNotes').value
             };
 
             try {
                 if (editingIndex === -1) {
-                    // 新規追加 - addRecord は自動的にPOSTリクエストで送信される
                     if (currentUser.role !== 'admin') { 
                         alert('新規追加は管理者のみ可能です'); 
                         return; 
@@ -2313,8 +2700,7 @@
                     showSyncIndicator('新規追加完了', 'success');
                     await syncFromSheets();
                 } else {
-                    // 更新
-                    const originalIndex = allData.indexOf(filteredData[editingIndex]);
+                    const originalIndex = allData.findIndex(r => r.customerCode === filteredData[editingIndex].customerCode);
                     const oldData = allData[originalIndex];
                     
                     formData.customerCode = oldData.customerCode || '';
@@ -2343,20 +2729,20 @@
             }
         });
 
-        // モーダル外クリックで閉じる
         window.onclick = function(event) {
             const editModal = document.getElementById('editModal');
             const historyModal = document.getElementById('historyModal');
+            const paymentModal = document.getElementById('paymentModal');
             if (event.target === editModal) closeModal();
             if (event.target === historyModal) closeHistoryModal();
+            if (event.target === paymentModal) closePaymentModal();
         }
 
-        // リサイズ時の表示切り替え
         window.addEventListener('resize', function() { 
             updateEmptyState(); 
+            updatePaymentButtonVisibility();
         });
 
-        // オンライン復帰時の自動同期
         window.addEventListener('online', () => {
             const url = document.getElementById('sheetsUrl').value.trim();
             if (url) {
@@ -2370,15 +2756,32 @@
         // ========================================
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Enterキーでログイン
             document.getElementById('password').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') login();
             });
             
-            // 自動ログイン
+            const fileUploadArea = document.getElementById('fileUploadArea');
+            if (fileUploadArea) {
+                fileUploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    fileUploadArea.classList.add('dragover');
+                });
+                fileUploadArea.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    fileUploadArea.classList.remove('dragover');
+                });
+                fileUploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    fileUploadArea.classList.remove('dragover');
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        handleFileSelect(e.dataTransfer.files[0]);
+                    }
+                });
+            }
+
             try {
                 const savedUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
-                if (savedUser && savedUser.id && savedUser.name) {
+                if (savedUser && savedUser.id && savedUser.name && savedUser.sessionToken) {
                     currentUser = savedUser;
                     showMainScreen();
                 }
