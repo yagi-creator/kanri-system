@@ -2778,3 +2778,152 @@
                 personalSettings.yearlyProfitIncreaseTarget = parseInt(document.getElementById('yearlyProfitIncreaseTarget').value);
                 
                 const fiscalMonths = getFiscalYearStructure().months
+                            // 検索入力イベント
+            document.getElementById('searchInput').addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(applyFilters, 500);
+            });
+
+            // モーダル外クリックで閉じる処理
+            document.addEventListener('click', function(e) {
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    if (e.target === modal) {
+                        closeModal(modal.id);
+                    }
+                });
+            });
+
+            // 個人設定フォームの送信処理
+            document.getElementById('personalSettingsForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                personalSettings.userName = document.getElementById('userName').value;
+                personalSettings.profitRate = parseFloat(document.getElementById('profitRate').value);
+                personalSettings.yearlyProfitTarget = parseInt(document.getElementById('yearlyProfitTarget').value);
+                personalSettings.yearlyProfitIncreaseTarget = parseInt(document.getElementById('yearlyProfitIncreaseTarget').value);
+                
+                const fiscalMonths = getFiscalYearStructure().months;
+                fiscalMonths.forEach(monthInfo => {
+                    const actualInput = document.getElementById(`monthlyProfitActual${monthInfo.month}`);
+                    const targetInput = document.getElementById(`monthlyProfitTarget${monthInfo.month}`);
+                    if (actualInput) {
+                        personalSettings.monthlyProfitActuals[monthInfo.month] = parseInt(actualInput.value) || 0;
+                    }
+                    if (targetInput) {
+                        personalSettings.monthlyProfitTargets[monthInfo.month] = parseInt(targetInput.value) || 0;
+                    }
+                });
+                
+                savePersonalSettings();
+                
+                // 粗利率変更に伴う全カードの粗利増予定の再計算
+                cardsData.forEach(cardData => {
+                    cardData.annualProfitIncreaseExpected = calculateProfitIncrease(cardData.annualSalesIncreaseTarget || 0);
+                });
+                saveCardsData();
+                
+                progressCache = null;
+                updateDashboard();
+                renderCards();
+                
+                showToast('個人設定を保存しました！', 'success');
+                closePersonalSettingsModal();
+            });
+
+            // 新規塾登録フォームの送信処理
+            document.getElementById('newCardForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const jukuName = document.getElementById('newJukuName').value.trim();
+                const status = document.getElementById('newJukuStatus').value;
+                const address = document.getElementById('newAddressInput').value.trim();
+                const annualSalesIncreaseTarget = parseInt(document.getElementById('newSalesIncreaseTarget').value) || 0;
+                const annualProfitActual = parseInt(document.getElementById('newProfitActual').value) || 0;
+                const annualProfitIncreaseExpected = calculateProfitIncrease(annualSalesIncreaseTarget);
+                
+                if (!jukuName) {
+                    showToast('塾名を入力してください。', 'error');
+                    return;
+                }
+                if (!address) {
+                    showToast('住所を入力してください。', 'error');
+                    return;
+                }
+                
+                const fiscalStructure = getFiscalYearStructure();
+                const currentMonthKey = fiscalStructure.currentMonthKey;
+
+                // 月別データの初期化（全て0で統一）
+                const monthlyData = {};
+                fiscalStructure.months.forEach(monthInfo => {
+                    monthlyData[monthInfo.key] = {
+                        salesIncreaseForecast: 0,
+                        probability: 50,
+                        memo: ""
+                    };
+                });
+
+                const cardData = {
+                    id: nextCardId++,
+                    jukuName: jukuName,
+                    status: status,
+                    address: address,
+                    annualSalesIncreaseTarget: annualSalesIncreaseTarget,
+                    annualProfitIncreaseExpected: annualProfitIncreaseExpected,
+                    annualProfitActual: annualProfitActual,
+                    displayMonth: currentMonthKey,
+                    monthlyData: monthlyData,
+                    lastUpdated: new Date().toISOString().split('T')[0]
+                };
+                
+                cardsData.push(cardData);
+                saveCardsData();
+                progressCache = null;
+                renderCards();
+                
+                document.getElementById('newCardForm').reset();
+                closeNewCardModal();
+                showToast(`新規塾「${cardData.jukuName}」を登録しました！`, 'success');
+            });
+
+            // 塾編集フォームの送信処理
+            document.getElementById('editCardForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const cardId = parseInt(document.getElementById('editCardId').value);
+                const cardData = cardsData.find(card => card.id === cardId);
+                
+                if (!cardData) {
+                    showToast('編集対象のデータが見つかりません。', 'error');
+                    return;
+                }
+
+                const annualSalesIncreaseTarget = parseInt(document.getElementById('editSalesIncreaseTarget').value) || 0;
+                const annualProfitActual = parseInt(document.getElementById('editProfitActual').value) || 0;
+                const annualProfitIncreaseExpected = calculateProfitIncrease(annualSalesIncreaseTarget);
+                
+                cardData.jukuName = document.getElementById('editJukuName').value.trim();
+                cardData.status = document.getElementById('editJukuStatus').value;
+                cardData.address = document.getElementById('editAddressInput').value.trim();
+                cardData.annualSalesIncreaseTarget = annualSalesIncreaseTarget;
+                cardData.annualProfitIncreaseExpected = annualProfitIncreaseExpected;
+                cardData.annualProfitActual = annualProfitActual;
+                cardData.lastUpdated = new Date().toISOString().split('T')[0];
+                
+                saveCardsData();
+                progressCache = null;
+                updateDashboard();
+                renderCards();
+                
+                showToast(`${cardData.jukuName}のデータを更新しました！`, 'success');
+                closeEditCardModal();
+            });
+
+            // 初期表示のレンダリング
+            renderCards();
+            updateDashboard();
+        });
+    </script>
+</body>
+</html>
