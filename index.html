@@ -2457,13 +2457,150 @@
                 tbody.appendChild(tr);
             });
         }
+function renderCardView() {
+    const container = document.getElementById('cardContainer');
+    container.innerHTML = '';
 
-        function renderCardView() {
-            // カードビューの実装（既存のHTMLから継承）
-            const container = document.getElementById('cardContainer');
-            container.innerHTML = '';
-            // 実装は既存のHTMLと同様
+    filteredData.forEach((row, index) => {
+        const overdueDays = calculateOverdueDays(row.dueDate);
+        const isZeroAmount = isZeroAmountRecord(row);
+        
+        const card = document.createElement('div');
+        card.className = 'juku-card';
+        
+        if (isZeroAmount) {
+            card.classList.add('completed-gray');
+        } else if (overdueDays >= 10) {
+            card.classList.add('overdue-pink');
         }
+
+        const header = document.createElement('div');
+        header.className = 'card-header';
+        
+        const schoolName = document.createElement('div');
+        schoolName.className = 'card-school-name';
+        schoolName.textContent = row.schoolName || '';
+        
+        const amount = document.createElement('div');
+        amount.className = 'card-amount';
+        amount.textContent = '¥' + (parseAmount(row.amount) || 0).toLocaleString();
+        
+        header.appendChild(schoolName);
+        header.appendChild(amount);
+
+        const createInfoRow = (label, value, extra = null) => {
+            const rowEl = document.createElement('div');
+            rowEl.className = 'card-info-row';
+            
+            const labelEl = document.createElement('span');
+            labelEl.className = 'card-info-label';
+            labelEl.textContent = label;
+            
+            const valueEl = document.createElement('span');
+            if (typeof value === 'string') {
+                valueEl.textContent = value;
+            } else {
+                valueEl.appendChild(value);
+            }
+            
+            rowEl.appendChild(labelEl);
+            rowEl.appendChild(valueEl);
+            if (extra) rowEl.appendChild(extra);
+            return rowEl;
+        };
+
+        const dueDateValue = isZeroAmount ? '-' : (row.dueDate || '未設定');
+        const overdueTag = document.createElement('span');
+        overdueTag.className = 'card-overdue';
+        if (isZeroAmount || overdueDays === null || overdueDays <= 0) {
+            overdueTag.textContent = '-';
+            overdueTag.classList.add('normal');
+        } else if (overdueDays >= 3) {
+            overdueTag.textContent = `${overdueDays}日`;
+            overdueTag.classList.add('danger');
+        } else {
+            overdueTag.textContent = `${overdueDays}日`;
+            overdueTag.classList.add('warning');
+        }
+        const dueDateRow = createInfoRow('期日:', dueDateValue, overdueTag);
+
+        const assignRow = createInfoRow('担当:', row.assignedTo || '');
+        const progressEl = document.createElement('span');
+        progressEl.textContent = `進捗: ${row.progress || ''}`;
+        assignRow.appendChild(progressEl);
+
+        const phoneValue = document.createElement('span');
+        if (isIOS() && currentUser && currentUser.role === 'staff' && row.phone) {
+            const phoneLink = document.createElement('a');
+            phoneLink.href = 'tel:' + formatTelForIPhone(row.phone);
+            phoneLink.className = 'phone-number';
+            phoneLink.textContent = row.phone;
+            phoneLink.style.color = '#007bff';
+            phoneLink.style.textDecoration = 'underline';
+            phoneValue.appendChild(phoneLink);
+        } else {
+            phoneValue.className = 'phone-number';
+            phoneValue.textContent = row.phone || '未登録';
+        }
+        const phoneRow = createInfoRow('電話:', phoneValue);
+
+        const paymentRow = createInfoRow('入金予定:', row.paymentDate || '未設定');
+        const receivedAmountRow = createInfoRow('入金額:', '¥' + (parseAmount(row.receivedAmount) || 0).toLocaleString());
+
+        const updateValue = row.lastUpdated ? formatDateTimeMobile(row.lastUpdated) : '-';
+        const updateRow = createInfoRow('最終更新:', updateValue);
+        updateRow.querySelector('span:last-child').style.fontSize = '0.85em';
+        updateRow.querySelector('span:last-child').style.color = '#666';
+
+        let notesRow = null;
+        if (row.notes) {
+            const notesText = row.notes.length > 30 ? row.notes.substring(0, 30) + '...' : row.notes;
+            notesRow = createInfoRow('備考:', notesText);
+        }
+
+        const actions = document.createElement('div');
+        actions.className = 'card-actions';
+
+        if (isIOS() && currentUser && currentUser.role === 'staff') {
+            const phoneBtn = document.createElement('a');
+            phoneBtn.className = 'card-action-btn card-phone-btn';
+            if (row.phone) {
+                phoneBtn.href = 'tel:' + formatTelForIPhone(row.phone);
+                phoneBtn.textContent = '📞 発信';
+            } else {
+                phoneBtn.textContent = '📞 未登録';
+                phoneBtn.style.opacity = '0.6';
+                phoneBtn.style.pointerEvents = 'none';
+            }
+            actions.appendChild(phoneBtn);
+        }
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'card-action-btn card-edit-btn';
+        editBtn.textContent = '✏️ 編集';
+        editBtn.addEventListener('click', () => editRecord(index));
+        actions.appendChild(editBtn);
+
+        const histBtn = document.createElement('button');
+        histBtn.className = 'card-action-btn card-history-btn';
+        histBtn.textContent = '📋 履歴';
+        histBtn.addEventListener('click', () => showHistory(row.schoolName, row.customerCode));
+        actions.appendChild(histBtn);
+
+        card.appendChild(header);
+        card.appendChild(dueDateRow);
+        card.appendChild(assignRow);
+        card.appendChild(phoneRow);
+        card.appendChild(paymentRow);
+        card.appendChild(receivedAmountRow);
+        card.appendChild(updateRow);
+        if (notesRow) card.appendChild(notesRow);
+        card.appendChild(actions);
+
+        container.appendChild(card);
+    });
+}
+
 
         function updateStats() {
             const now = new Date();
