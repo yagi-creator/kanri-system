@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="塾入金管理">
     <meta name="theme-color" content="#007bff">
-    <title>塾入金管理システム v3.3 入金処理確認モーダル対応完全版</title>
+    <title>塾入金管理システム v3.3 完全実装版</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
@@ -1162,15 +1162,15 @@
             <h2>塾入金管理システム v3.3 <span class="complete-badge">完全実装版</span></h2>
             <div class="subtitle">ID・パスワードでログイン</div>
             
-            <!-- Apps Script URL設定セクション -->
+            <!-- Apps Script URL設定 -->
             <div class="url-config">
-                <label for="appScriptUrl">📎 Apps Script WebアプリURL:</label>
+                <label for="appScriptUrl">📎 Apps Script URL:</label>
                 <div class="url-input-row">
                     <input type="url" id="appScriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
                     <button type="button" class="url-save-btn" onclick="saveAppScriptUrl()">保存</button>
                 </div>
                 <div id="urlStatus" class="url-status info">
-                    Apps Script WebアプリのURLを入力してください。
+                    Apps Script URLを入力してください。
                 </div>
             </div>
             
@@ -1188,9 +1188,8 @@
             
             <div class="info-note">
                 <strong>🚀 v3.3 完全実装版</strong><br>
-                <strong>💰 入金処理確認モーダル機能</strong>・<strong>📋 履歴機能</strong>・<strong>✏️ 編集機能</strong><br>
-                全ての機能が完全動作・PC/スマートフォン対応・月2000件処理対応<br>
-                <small style="opacity: 0.8;">※全環境対応・管理者/担当者権限・セキュリティ強化済み</small>
+                入金確認モーダル・履歴・編集機能搭載。PC/スマホ対応。<br>
+                <small style="opacity: 0.8;">管理者/担当者権限・セキュア通信対応</small>
             </div>
         </div>
     </div>
@@ -1202,7 +1201,7 @@
             <div class="header">
                 <div>
                     <h1>塾入金管理システム v3.3 <span class="complete-badge">完全実装版</span></h1>
-                    <div class="version-info">入金処理確認モーダル・履歴・編集機能完全実装・全環境対応・月2000件処理対応</div>
+                    <div class="version-info">入金確認モーダル・履歴・編集・全環境対応</div>
                     <div id="lastEditInfo" style="font-size: 13px; opacity: 0.9; margin-top: 4px;">最終編集: -</div>
                 </div>
                 <div class="user-info">
@@ -1263,9 +1262,7 @@
                     <span id="syncStatus" style="margin-left: 15px; font-weight: 500;"></span>
                 </div>
                 <div style="margin-top: 12px; font-size: 12px; color: #666; line-height: 1.5;">
-                    ⚡ Code.gs v3.3確認モーダル対応版に対応したWebアプリURLを入力してください<br>
-                    🔐 HTTPメソッド自動切替により、GET/POST処理を適切に振り分けます<br>
-                    💰 入金処理確認モーダル機能が利用可能になります（PC環境のみ）
+                    対応するApps Script URLを入力してください。GET/POSTは自動切替。入金確認モーダルはPCで利用可能。
                 </div>
             </div>
 
@@ -1321,7 +1318,7 @@
                             <th onclick="sortTable(4)">超過日数</th>
                             <th onclick="sortTable(5)">入金予定日</th>
                             <th onclick="sortTable(6)">進捗</th>
-                            <th onclick="sortTable(7)">担当</th>
+                            <th onclick="sortTable(7)">担当者</th>
                             <th onclick="sortTable(8)">電話番号</th>
                             <th onclick="sortTable(9)">最終更新</th>
                             <th onclick="sortTable(10)">備考</th>
@@ -1337,7 +1334,7 @@
         </div>
     </div>
 
-    <!-- 入金処理モーダル（新機能） -->
+    <!-- 入金処理モーダル -->
     <div id="paymentModal" class="payment-modal">
         <div class="payment-modal-content">
             <div class="payment-header">
@@ -1393,18 +1390,18 @@
             <div style="margin-top: 20px; font-size: 13px; color: #666; line-height: 1.5;">
                 <p><strong>📋 処理ルール:</strong></p>
                 <ul style="margin-left: 20px;">
-                    <li><strong>完全一致データ:</strong> 自動処理（得意先名１ or 得意先名１+２が完全一致）</li>
-                    <li><strong>不一致データ:</strong> 確認モーダルで個別判断</li>
-                    <li>未収金額から入金額を減算（マイナスの場合は0円）</li>
-                    <li>入金累計は常に加算（過去の入金履歴を保持）</li>
-                    <li>重複データ（伝票№+得意先コード+塾名+入金額）はスキップ</li>
+                    <li>完全一致（得意先名１ or 得意先名１+２）は自動処理</li>
+                    <li>不一致は確認モーダルで個別判断</li>
+                    <li>未収金額から入金額を減算（マイナスは0円）</li>
+                    <li>入金累計は加算（履歴保持）</li>
+                    <li>重複（伝票№+得意先コード+塾名+入金額）はスキップ</li>
                     <li>処理結果は「入金処理履歴」シートに記録</li>
                 </ul>
             </div>
         </div>
     </div>
 
-    <!-- 入金処理確認モーダル（新機能） -->
+    <!-- 入金処理確認モーダル -->
     <div id="confirmationModal" class="confirmation-modal">
         <div class="confirmation-modal-content">
             <div class="confirmation-header">
@@ -1413,8 +1410,8 @@
             </div>
             
             <div class="confirmation-warning">
-                <strong>⚠️ 塾名が不一致のデータが見つかりました</strong><br>
-                得意先コードは一致しますが、塾名が異なります。処理するかスキップするかを選択してください。
+                <strong>⚠️ 請求先名が不一致のデータがあります</strong><br>
+                得意先コードは一致しています。処理するかスキップを選択してください。
             </div>
             
             <div class="confirmation-progress" id="confirmationProgress">
@@ -1440,7 +1437,7 @@
                 <div class="confirmation-side excel">
                     <h4>📋 Excel</h4>
                     <div class="confirmation-detail">
-                        <strong>塾名:</strong> <span id="confirmExcelSchoolName"></span>
+                        <strong>請求先名:</strong> <span id="confirmExcelSchoolName"></span>
                     </div>
                     <div class="confirmation-detail">
                         <strong>入金額:</strong> <span id="confirmExcelAmount"></span>
@@ -1574,11 +1571,6 @@
     </div>
 
     <script>
-        // ========================================
-        // 塾入金管理システム v3.3 完全実装版
-        // 履歴・編集機能修正済み・全環境対応・月2000件処理対応
-        // ========================================
-
         // システム変数
         let currentUser = null;
         let allData = [];
@@ -1606,10 +1598,7 @@
         let appScriptUrl = '';
         const APPS_SCRIPT_URL_KEY = 'juku_app_script_url';
 
-        // ========================================
-        // Apps Script URL管理機能
-        // ========================================
-
+        // Apps Script URL管理
         function loadAppScriptUrl() {
             appScriptUrl = localStorage.getItem(APPS_SCRIPT_URL_KEY) || '';
             document.getElementById('appScriptUrl').value = appScriptUrl;
@@ -1638,14 +1627,11 @@
                 statusDiv.textContent = 'URLが設定されました。';
             } else {
                 statusDiv.className = 'url-status info';
-                statusDiv.textContent = 'Apps Script WebアプリのURLを入力してください。';
+                statusDiv.textContent = 'Apps Script URLを入力してください。';
             }
         }
 
-        // ========================================
-        // デバイス判定機能（PC環境専用制限）
-        // ========================================
-
+        // デバイス判定
         function isPCEnvironment() {
             const userAgent = navigator.userAgent;
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
@@ -1660,10 +1646,7 @@
             }
         }
 
-        // ========================================
-        // 統一API呼び出し関数（セッション管理対応）
-        // ========================================
-
+        // API呼び出し
         async function apiCall(action, data = {}) {
             const apiUrl = appScriptUrl || document.getElementById('sheetsUrl').value.trim();
             if (!apiUrl || !isAppsScriptUrl(apiUrl)) {
@@ -1726,15 +1709,11 @@
                 return result;
                 
             } catch (error) {
-                console.error(`API呼び出しエラー (${readActions.has(action) ? 'GET' : 'POST'} ${action}):`, error);
                 throw error;
             }
         }
 
-        // ========================================
-        // 認証システム
-        // ========================================
-
+        // 認証
         async function login() {
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
@@ -1770,7 +1749,6 @@
                 showMainScreen();
 
             } catch (error) {
-                console.error('認証エラー:', error);
                 showError(errorDiv, '認証中にエラーが発生しました: ' + error.message);
                 showSyncIndicator('認証エラー', 'error');
             }
@@ -1811,10 +1789,7 @@
             showSyncIndicator('ログアウトしました', 'success');
         }
 
-        // ========================================
-        // 入金処理確認モーダル機能
-        // ========================================
-
+        // 入金処理
         async function processPaymentFile() {
             if (!selectedPaymentFile) {
                 alert('ファイルを選択してください');
@@ -1870,7 +1845,6 @@
                 }
                 
             } catch (error) {
-                console.error('入金処理エラー:', error);
                 showSyncIndicator('入金処理中にエラーが発生しました', 'error');
                 alert('入金処理中にエラーが発生しました: ' + error.message);
             } finally {
@@ -1880,7 +1854,6 @@
             }
         }
 
-        // 確認モーダル表示
         function showConfirmationModal() {
             if (currentConfirmationIndex >= confirmationQueue.length) {
                 document.getElementById('confirmationModal').style.display = 'none';
@@ -1953,7 +1926,6 @@
             showSyncIndicator('入金処理をキャンセルしました', 'info');
         }
 
-        // 最終的な入金処理実行
         async function executeAllPayments() {
             try {
                 document.getElementById('processingIndicator').style.display = 'block';
@@ -1973,7 +1945,6 @@
                 await syncFromSheets();
                 
             } catch (error) {
-                console.error('最終処理エラー:', error);
                 showSyncIndicator('最終処理中にエラーが発生しました', 'error');
                 alert('最終処理中にエラーが発生しました: ' + error.message);
             } finally {
@@ -1999,10 +1970,7 @@
             document.getElementById('resultSummary').classList.remove('hidden');
         }
 
-        // ========================================
         // 入金処理モーダル管理
-        // ========================================
-
         function showPaymentModal() {
             document.getElementById('paymentModal').style.display = 'block';
             resetPaymentModalState();
@@ -2020,7 +1988,6 @@
             document.getElementById('processingIndicator').style.display = 'none';
             document.getElementById('resultSummary').classList.add('hidden');
             document.getElementById('btnProcessPayment').disabled = true;
-            // 修正: 初期化時も「入金処理実行」で統一
             document.getElementById('btnProcessPayment').textContent = '💰 入金処理実行';
         }
 
@@ -2050,10 +2017,7 @@
             document.getElementById('btnProcessPayment').textContent = '💰 入金処理実行';
         }
 
-        // ========================================
-        // 編集・追加・削除機能（完全実装版）
-        // ========================================
-
+        // 編集・追加・削除
         function showAddModal() {
             if (!requireAdminAccess('新規追加')) return;
             editingIndex = -1;
@@ -2085,24 +2049,20 @@
         }
 
         function setFieldPermissions() {
-            // 入金額は常に読み取り専用（自動計算のため）
             document.getElementById('editReceivedAmount').disabled = true;
 
             const baseFields = ['editSchoolName', 'editAmount', 'editDueDate', 'editAssignedTo', 'editPhone'];
             
             if (currentUser && currentUser.role === 'staff') {
-                // 担当者は基本項目を編集不可
                 baseFields.forEach(id => {
                     const field = document.getElementById(id);
                     if (field) field.disabled = true;
                 });
-                // 担当者は進捗・入金予定日・備考のみ編集可能
                 ['editPaymentDate', 'editProgress', 'editNotes'].forEach(id => {
                     const field = document.getElementById(id);
                     if (field) field.disabled = false;
                 });
             } else {
-                // 管理者は全項目編集可能
                 [...baseFields, 'editPaymentDate', 'editProgress', 'editNotes'].forEach(id => {
                     const field = document.getElementById(id);
                     if (field) field.disabled = false;
@@ -2128,7 +2088,6 @@
                 showSyncIndicator('サーバーから削除完了', 'success');
                 await syncFromSheets();
             } catch (error) {
-                console.error('削除エラー:', error);
                 alert('削除に失敗しました: ' + error.message);
             }
         }
@@ -2158,7 +2117,6 @@
                 alert(`完全削除が完了しました（${result.deletedCount}件）`);
                 await syncFromSheets();
             } catch (error) {
-                console.error('0円案件削除エラー:', error);
                 showSyncIndicator('削除失敗: ' + error.message, 'error');
                 alert('削除に失敗しました: ' + error.message);
             }
@@ -2196,15 +2154,11 @@
                 return true;
 
             } catch (error) {
-                console.error('更新送信エラー:', error);
                 throw error;
             }
         }
 
-        // ========================================
-        // 履歴機能（完全実装版）
-        // ========================================
-
+        // 履歴
         async function showHistory(schoolName, customerCode = '') {
             currentHistorySchool = schoolName;
             
@@ -2217,7 +2171,6 @@
                 editHistory = result.history || [];
                 showSyncIndicator(`履歴取得完了 (${editHistory.length}件)`, 'success');
             } catch (error) {
-                console.error('履歴取得エラー:', error);
                 showSyncIndicator('履歴取得に失敗しました', 'error');
                 editHistory = [];
             }
@@ -2242,7 +2195,6 @@
                 return historyNewestFirst ? dateB - dateA : dateA - dateB;
             });
             
-            // デスクトップ版テーブル
             sortedHistory.forEach(entry => {
                 const tr = document.createElement('tr');
                 
@@ -2261,7 +2213,6 @@
                 tbody.appendChild(tr);
             });
 
-            // モバイル版カード
             sortedHistory.forEach(entry => {
                 const item = document.createElement('div');
                 item.className = 'mobile-history-item';
@@ -2331,10 +2282,7 @@
             document.getElementById('historyModal').style.display = 'none';
         }
 
-        // ========================================
-        // ソート機能（完全実装版）
-        // ========================================
-
+        // ソート
         function sortTable(columnIndex) {
             if (sortColumn === columnIndex) {
                 sortDirection *= -1;
@@ -2355,47 +2303,47 @@
                 let aVal, bVal;
                 
                 switch (columnIndex) {
-                    case 0: // 請求先名
+                    case 0:
                         aVal = a.schoolName || '';
                         bVal = b.schoolName || '';
                         break;
-                    case 1: // 未収金額
+                    case 1:
                         aVal = parseAmount(a.amount) || 0;
                         bVal = parseAmount(b.amount) || 0;
                         break;
-                    case 2: // 入金額
+                    case 2:
                         aVal = parseAmount(a.receivedAmount) || 0;
                         bVal = parseAmount(b.receivedAmount) || 0;
                         break;
-                    case 3: // 期日
+                    case 3:
                         aVal = a.dueDate || '';
                         bVal = b.dueDate || '';
                         break;
-                    case 4: // 超過日数
+                    case 4:
                         aVal = calculateOverdueDays(a.dueDate) || 0;
                         bVal = calculateOverdueDays(b.dueDate) || 0;
                         break;
-                    case 5: // 入金予定日
+                    case 5:
                         aVal = a.paymentDate || '';
                         bVal = b.paymentDate || '';
                         break;
-                    case 6: // 進捗
+                    case 6:
                         aVal = a.progress || '';
                         bVal = b.progress || '';
                         break;
-                    case 7: // 担当
+                    case 7:
                         aVal = a.assignedTo || '';
                         bVal = b.assignedTo || '';
                         break;
-                    case 8: // 電話番号
+                    case 8:
                         aVal = a.phone || '';
                         bVal = b.phone || '';
                         break;
-                    case 9: // 最終更新
+                    case 9:
                         aVal = a.lastUpdated || '';
                         bVal = b.lastUpdated || '';
                         break;
-                    case 10: // 備考
+                    case 10:
                         aVal = a.notes || '';
                         bVal = b.notes || '';
                         break;
@@ -2445,10 +2393,7 @@
             });
         }
 
-        // ========================================
-        // ユーティリティ関数
-        // ========================================
-
+        // ユーティリティ
         function parseAmount(value) {
             if (typeof value === 'number') return value;
             if (!value) return 0;
@@ -2560,10 +2505,7 @@
             });
         }
 
-        // ========================================
-        // データ管理機能
-        // ========================================
-
+        // データ管理
         function buildSchoolLastEditMap() {
             schoolLastEditMap.clear();
             if (!allData || allData.length === 0) return;
@@ -2623,7 +2565,6 @@
                 try { 
                     allData = JSON.parse(savedData); 
                 } catch (error) { 
-                    console.error('Data loading error:', error);
                     allData = []; 
                 }
             } else {
@@ -2686,7 +2627,6 @@
                 showSyncIndicator(`同期完了 (${allData.length}件)`, 'success');
 
             } catch (error) {
-                console.error('同期エラー:', error);
                 if (status) {
                     status.textContent = '❌ 同期失敗: ' + error.message;
                     setTimeout(() => status.textContent = '', 5000);
@@ -2697,10 +2637,7 @@
             }
         }
 
-        // ========================================
-        // フィルタリング・UI機能
-        // ========================================
-
+        // フィルタリング・UI
         function applyAllFilters() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             currentSearchTerm = searchTerm;
@@ -2937,7 +2874,7 @@
                 }
                 const dueDateRow = createInfoRow('期日:', dueDateValue, overdueTag);
 
-                const assignRow = createInfoRow('担当:', row.assignedTo || '');
+                const assignRow = createInfoRow('担当者:', row.assignedTo || '');
                 const progressEl = document.createElement('span');
                 progressEl.textContent = `進捗: ${row.progress || ''}`;
                 assignRow.appendChild(progressEl);
@@ -2955,9 +2892,9 @@
                     phoneValue.className = 'phone-number';
                     phoneValue.textContent = row.phone || '未登録';
                 }
-                const phoneRow = createInfoRow('電話:', phoneValue);
+                const phoneRow = createInfoRow('電話番号:', phoneValue);
 
-                const paymentRow = createInfoRow('入金予定:', row.paymentDate || '未設定');
+                const paymentRow = createInfoRow('入金予定日:', row.paymentDate || '未設定');
                 const receivedAmountRow = createInfoRow('入金額:', '¥' + (parseAmount(row.receivedAmount) || 0).toLocaleString());
 
                 const updateValue = row.lastUpdated ? formatDateTimeMobile(row.lastUpdated) : '-';
@@ -3016,7 +2953,7 @@
 
         function updateStats() {
             const now = new Date();
-            now.setHours(0, 0, 0, 0); // 今日の0時に設定
+            now.setHours(0, 0, 0, 0);
             const activeData = filteredData.filter(row => !isZeroAmountRecord(row));
             
             const total = activeData.length;
@@ -3024,14 +2961,11 @@
             const totalReceived = allData.reduce((sum, row) => sum + (parseAmount(row.receivedAmount) || 0), 0);
             const overdue = activeData.filter(row => row.dueDate && calculateOverdueDays(row.dueDate) > 0).length;
             
-            // 修正: 期限間近の計算ロジック（今日から7日以内の未来期日）
             const dueSoon = activeData.filter(row => {
                 if (!row.dueDate) return false;
                 const dueDateObj = new Date(row.dueDate + 'T00:00:00');
                 const sevenDaysFromNow = new Date(now);
                 sevenDaysFromNow.setDate(now.getDate() + 7);
-                
-                // 期日が今日から7日以内（今日を含む）
                 return dueDateObj >= now && dueDateObj <= sevenDaysFromNow;
             }).length;
 
@@ -3064,10 +2998,7 @@
             }
         }
 
-        // ========================================
-        // 設定・その他の機能（完全実装版）
-        // ========================================
-
+        // 設定・その他
         function showSettings() {
             document.getElementById('settingsPanel').style.display = 'block';
         }
@@ -3076,7 +3007,7 @@
             document.getElementById('settingsPanel').style.display = 'none';
         }
 
-        function saveSettings() {
+ function saveSettings() {
             const rawUrl = document.getElementById('sheetsUrl').value.trim();
             
             if (!isAppsScriptUrl(rawUrl)) {
@@ -3108,7 +3039,7 @@
                         document.getElementById('autoUpdateInterval').value = parsed.autoUpdateInterval || '30000';
                     }
                 } catch (e) {
-                    console.error('設定の読み込みに失敗:', e);
+                    // 設定読み込み失敗時は無視
                 }
             }
         }
@@ -3133,10 +3064,7 @@
             syncFromSheets();
         }
 
-        // ========================================
-        // その他のユーティリティ機能（完全実装版）
-        // ========================================
-
+        // その他のユーティリティ
         function resetLocalData() {
             const firstConfirm = confirm(
                 '全てのローカルデータを削除しますか？\n\n' +
@@ -3178,7 +3106,6 @@
                 updateLastEditInfo();
                 showSyncIndicator('ローカルデータを完全にリセットしました', 'success');
             } catch (error) {
-                console.error('Reset error:', error);
                 showSyncIndicator('リセット中にエラーが発生しました', 'error');
             }
         }
@@ -3195,7 +3122,7 @@
                 '期日': row.dueDate,
                 '入金予定日': row.paymentDate || '',
                 '進捗': row.progress,
-                '担当': row.assignedTo,
+                '担当者': row.assignedTo,
                 '電話番号': row.phone || '',
                 '最終更新': row.lastUpdated || '',
                 '備考': row.notes || '',
@@ -3206,10 +3133,7 @@
             XLSX.writeFile(wb, 'juku_data_v33_complete.xlsx');
         }
 
-        // ========================================
-        // フォーム処理・イベントリスナー（完全実装版）
-        // ========================================
-
+        // フォーム処理・イベントリスナー
         document.getElementById('editForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -3227,7 +3151,6 @@
 
             try {
                 if (editingIndex === -1) {
-                    // 新規追加
                     if (currentUser.role !== 'admin') { 
                         alert('新規追加は管理者のみ可能です'); 
                         return; 
@@ -3237,7 +3160,6 @@
                     showSyncIndicator('新規追加完了', 'success');
                     await syncFromSheets();
                 } else {
-                    // 更新
                     const originalIndex = allData.findIndex(r => r.customerCode === filteredData[editingIndex].customerCode);
                     const oldData = allData[originalIndex];
                     
@@ -3262,25 +3184,18 @@
                 }
                 closeModal();
             } catch (error) {
-                console.error('保存エラー:', error);
                 alert('データ保存に失敗しました: ' + error.message);
             }
         });
 
-        // ========================================
-        // 初期化処理（完全実装版）
-        // ========================================
-
+        // 初期化処理
         document.addEventListener('DOMContentLoaded', function() {
-            // Apps Script URL読み込み
             loadAppScriptUrl();
 
-            // Enterキーでログイン
             document.getElementById('password').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') login();
             });
             
-            // ファイルのドラッグ&ドロップ処理
             const fileUploadArea = document.getElementById('fileUploadArea');
             if (fileUploadArea) {
                 fileUploadArea.addEventListener('dragover', (e) => {
@@ -3300,7 +3215,6 @@
                 });
             }
 
-            // 自動ログイン処理
             try {
                 const savedUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
                 if (savedUser && savedUser.id && savedUser.name && savedUser.sessionToken) {
@@ -3308,21 +3222,18 @@
                     showMainScreen();
                 }
             } catch (error) {
-                console.log('Auto-login failed:', error);
+                // 自動ログイン失敗時は無視
             }
 
-            // 初期表示更新
             updatePaymentButtonVisibility();
             updateEmptyState();
         });
 
-        // リサイズイベント処理
         window.addEventListener('resize', function() { 
             updateEmptyState(); 
             updatePaymentButtonVisibility();
         });
 
-        // モーダル外クリック処理
         window.onclick = function(event) {
             const editModal = document.getElementById('editModal');
             const historyModal = document.getElementById('historyModal');
