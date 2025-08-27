@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="塾入金管理">
     <meta name="theme-color" content="#007bff">
-    <title>塾入金管理システム v4.1</title>
+    <title>塾入金管理システム v4.2</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
@@ -1110,7 +1110,7 @@
     </style>
     
     <style>
-/* 編集モーダルをコンパクト化 */
+/* 編集モーダルをコンパクト化（フィールド重なり修正版） */
 #editModal .modal-content {
   margin: 2% auto !important;
   padding: 16px !important;
@@ -1122,7 +1122,7 @@
   padding-bottom: 8px !important;
 }
 #editModal .form-row {
-  gap: 8px !important;
+  gap: 12px !important;              /* 8px → 12px に拡大（重なり解消） */
   margin-bottom: 10px !important;
 }
 #editModal .form-group {
@@ -1150,16 +1150,15 @@
   }
   #editModal .form-row {
     flex-direction: row !important;
-    gap: 6px !important;
+    gap: 10px !important;            /* 6px → 10px に拡大（スマホでも重なり解消） */
   }
   #editModal .form-row .form-group {
-    flex: 1 1 0;
+    flex: 1 1 auto !important;       /* 0 → auto に変更（自然な幅調整） */
     min-width: 0;
   }
 }
 </style>
 
-    
 </head>
 <body>
     <div id="syncIndicator" class="sync-indicator"></div>
@@ -1167,7 +1166,7 @@
     <!-- ログイン画面 -->
     <div id="loginScreen" class="login-container">
         <div class="login-box">
-            <h2>塾入金管理システム v4.0</h2>
+            <h2>塾入金管理システム v4.2</h2>
             
             <!-- Apps Script URL設定 -->
             <div class="url-config">
@@ -1198,7 +1197,7 @@
             <!-- ヘッダー -->
             <div class="header">
                 <div>
-                    <h1>塾入金管理システム v4.0</h1>
+                    <h1>塾入金管理システム v4.2</h1>
                     <div id="lastEditInfo" style="font-size: 13px; opacity: 0.9; margin-top: 4px;">最終編集: -</div>
                 </div>
                 <div class="user-info">
