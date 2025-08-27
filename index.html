@@ -2803,21 +2803,13 @@
 
                 tr.appendChild(createCell(row.notes || ''));
 
-                const actionsCell = document.createElement('td');
+const actionsCell = document.createElement('td');
                 
                 const editBtn = document.createElement('button');
-                editBtn.className = 'card-action-btn card-edit-btn';
-                editBtn.textContent = '✏️ 編集';
+                editBtn.className = 'action-btn edit-btn';
+                editBtn.textContent = '編集';
                 editBtn.addEventListener('click', () => editRecord(index));
-                actions.appendChild(editBtn);
-
-                const histBtn = document.createElement('button');
-                histBtn.className = 'card-action-btn card-history-btn';
-                histBtn.textContent = '📋 履歴';
-                histBtn.addEventListener('click', () => showHistory(row.schoolName, row.customerCode));
-                actions.appendChild(histBtn);
-
-                const expandBtn = document.createElement('button');
+                actionsCell.appendChild(editBtn);
 
                 if (currentUser && currentUser.role === 'admin') {
                     const delBtn = document.createElement('button');
@@ -2935,11 +2927,17 @@
                     actions.appendChild(phoneBtn);
                 }
 
-                const editBtn = document.createElement('button');
+const editBtn = document.createElement('button');
                 editBtn.className = 'card-action-btn card-edit-btn';
                 editBtn.textContent = '✏️ 編集';
                 editBtn.addEventListener('click', () => editRecord(index));
                 actions.appendChild(editBtn);
+
+                const histBtn = document.createElement('button');
+                histBtn.className = 'card-action-btn card-history-btn';
+                histBtn.textContent = '📋 履歴';
+                histBtn.addEventListener('click', () => showHistory(row.schoolName, row.customerCode));
+                actions.appendChild(histBtn);
 
                 const expandBtn = document.createElement('button');
                 expandBtn.className = 'card-action-btn card-expand-btn';
