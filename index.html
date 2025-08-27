@@ -1108,6 +1108,58 @@
             .confirmation-arrow { justify-content: center; transform: rotate(90deg); }
         }
     </style>
+    
+    <style>
+/* 編集モーダルをコンパクト化 */
+#editModal .modal-content {
+  margin: 2% auto !important;
+  padding: 16px !important;
+  max-width: 460px !important;
+  max-height: fit-content !important;
+}
+#editModal .modal-header {
+  margin-bottom: 15px !important;
+  padding-bottom: 8px !important;
+}
+#editModal .form-row {
+  gap: 8px !important;
+  margin-bottom: 10px !important;
+}
+#editModal .form-group {
+  margin-bottom: 10px !important;
+}
+#editModal .form-group label {
+  margin-bottom: 4px !important;
+  font-size: 13px !important;
+}
+#editModal .form-group input,
+#editModal .form-group select,
+#editModal .form-group textarea {
+  padding: 8px 10px !important;
+  font-size: 13px !important;
+}
+#editModal .form-group textarea {
+  min-height: 60px !important;
+}
+@media (max-width: 768px) {
+  #editModal .modal-content {
+    margin: 3% auto !important;
+    width: 96% !important;
+    max-height: 92vh !important;
+    padding: 12px !important;
+  }
+  #editModal .form-row {
+    flex-direction: row !important;
+    gap: 6px !important;
+  }
+  #editModal .form-row .form-group {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+</style>
+
+    
 </head>
 <body>
     <div id="syncIndicator" class="sync-indicator"></div>
