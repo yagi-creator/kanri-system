@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -271,8 +271,8 @@
             margin-top: 8px;
             align-items: center;
             justify-content: flex-end;
+            flex-wrap: nowrap;
         }
-
         .header-btn {
             background: rgba(255,255,255,0.2);
             color: white;
@@ -875,14 +875,18 @@
 
         .form-row .form-group { flex: 1; }
 
-        /* カードビュー（モバイル） */
-        .card-container { display: none; }
+           /* カードビュー（モバイル） */
+        .card-container { 
+            display: none; 
+            overflow-x: hidden;
+            max-width: 100%;
+        }
 
         .juku-card {
             background: white;
             border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 16px;
+            padding: 12px;
+            margin-bottom: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             border-left: 4px solid #007bff;
             transition: transform 0.2s ease;
@@ -891,38 +895,56 @@
         .juku-card:hover { transform: translateY(-2px); }
         .juku-card.overdue-pink { background-color: #ffe6ea; border-left-color: #dc3545; }
         .juku-card.completed-gray { background: #e9ecef; border-left-color: #6c757d; color: #6c757d; }
-        .juku-card.expanded {
-            background: #f8f9fa;
-            border-left-color: #28a745;
-        }
 
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
             border-bottom: 1px solid #eee;
         }
 
         .card-school-name { font-size: 1.2em; font-weight: bold; color: #333; }
         .card-amount { font-size: 1.4em; font-weight: bold; color: #007bff; }
 
-        .card-info-row {
+        .card-row-dual {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
             font-size: 0.9em;
         }
 
-        .card-info-label { font-weight: bold; color: #666; min-width: 80px; }
+        .card-col {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-info-row {
+            margin-bottom: 4px;
+            font-size: 0.9em;
+        }
+
+        .card-info-label { 
+            font-weight: bold; 
+            color: #666; 
+            margin-right: 6px;
+        }
+
+        .card-due-emphasis {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
 
         .card-overdue {
             display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
+            padding: 2px 6px;
+            border-radius: 10px;
             font-size: 0.8em;
             font-weight: bold;
+            margin-left: 4px;
         }
 
         .card-overdue.normal { background: #e3f2fd; color: #1976d2; }
@@ -931,25 +953,24 @@
 
         .card-actions {
             display: flex;
-            gap: 12px;
-            margin-top: 20px;
-            padding-top: 16px;
+            gap: 8px;
+            margin-top: 8px;
+            padding-top: 8px;
             border-top: 1px solid #eee;
         }
 
         .card-action-btn {
             flex: 1;
-            padding: 12px;
+            padding: 10px 8px;
             border: none;
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 6px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            min-height: 44px;
+            min-height: 40px;
             -webkit-tap-highlight-color: transparent;
             text-decoration: none;
             transition: all 0.2s ease;
@@ -960,31 +981,6 @@
         .card-phone-btn:disabled { background: #6c757d; opacity: 0.5; transform: none; }
         .card-edit-btn { background: #ffc107; color: #212529; }
         .card-history-btn { background: #17a2b8; color: white; }
-        .card-expand-btn { background: #6f42c1; color: white; }
-
-        .card-details {
-            display: none;
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid #eee;
-        }
-
-        .card-details.visible {
-            display: block;
-        }
-
-        .card-detail-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 1.0em;
-        }
-
-        .card-detail-label {
-            font-weight: bold;
-            color: #666;
-            min-width: 100px;
-        }
 
         /* 履歴 */
         .history-table {
@@ -1110,9 +1106,7 @@
             .stat-value { font-size: 22px; }
             .confirmation-comparison { flex-direction: column; gap: 15px; }
             .confirmation-arrow { justify-content: center; transform: rotate(90deg); }
-            #btnToggleCards { display: inline-block !important; }
         }
-        #btnToggleCards { display: none; }
     </style>
 </head>
 <body>
@@ -1237,9 +1231,7 @@
                     <select id="assignedToFilter" onchange="updateAssignedToFilter()" class="btn btn-secondary" style="min-width: 150px;">
                         <option value="">担当者: 全て</option>
                     </select>
-                    
-                    <button class="btn btn-info" onclick="toggleAllCards()" id="btnToggleCards" style="display: none;">すべて展開</button>
-                    
+
                     <button class="btn btn-secondary" onclick="refreshData()">🔄 データ更新</button>
                     <button class="btn btn-danger" onclick="bulkDeleteCompleted()" id="btnBulkDelete">🗑️ 0円案件を一括削除</button>
                 </div>
@@ -1526,14 +1518,14 @@
         let currentAssignedToFilter = '';
         let syncing = false;
         let schoolLastEditMap = new Map();
-        let selectedPaymentFile = null;
-        let allCardsExpanded = false;
-
+        
         // 確認モーダル用変数
         let confirmationQueue = [];
         let currentConfirmationIndex = 0;
         let confirmedDecisions = [];
         let autoProcessItems = [];
+        let selectedPaymentFile = null;
+
 
         // Apps Script URL管理
         let appScriptUrl = '';
@@ -1584,11 +1576,6 @@
             const paymentBtn = document.getElementById('btnPaymentProcess');
             if (paymentBtn) {
                 paymentBtn.style.display = isPCEnvironment() ? '' : 'none';
-            }
-            
-            const toggleBtn = document.getElementById('btnToggleCards');
-            if (toggleBtn) {
-                toggleBtn.style.display = window.innerWidth <= 768 ? '' : 'none';
             }
         }
 
@@ -1875,49 +1862,6 @@
             filteredData = [...nonZeroRecords, ...zeroRecords];
             
             renderTable();
-        }
-
-        // 全カード展開機能
-        function toggleAllCards() {
-            const cards = document.querySelectorAll('.juku-card');
-            const btn = document.getElementById('btnToggleCards');
-            
-            allCardsExpanded = !allCardsExpanded;
-            
-            cards.forEach(card => {
-                const details = card.querySelector('.card-details');
-                const expandBtn = card.querySelector('.card-expand-btn');
-                
-                if (details) {
-                    if (allCardsExpanded) {
-                        card.classList.add('expanded');
-                        details.classList.add('visible');
-                        if (expandBtn) expandBtn.textContent = '📋 収納';
-                    } else {
-                        card.classList.remove('expanded');
-                        details.classList.remove('visible');
-                        if (expandBtn) expandBtn.textContent = '📋 展開';
-                    }
-                }
-            });
-            
-            btn.textContent = allCardsExpanded ? 'すべて収納' : 'すべて展開';
-        }
-
-        // カード個別展開機能
-        function toggleCardDetails(cardElement, index) {
-            const details = cardElement.querySelector('.card-details');
-            const expandBtn = cardElement.querySelector('.card-expand-btn');
-            
-            if (details.classList.contains('visible')) {
-                cardElement.classList.remove('expanded');
-                details.classList.remove('visible');
-                expandBtn.textContent = '📋 展開';
-            } else {
-                cardElement.classList.add('expanded');
-                details.classList.add('visible');
-                expandBtn.textContent = '📋 収納';
-            }
         }
 
         // 入金処理
@@ -2478,6 +2422,19 @@
             }
         }
 
+        function formatDateUnified(dateString) {
+            if (!dateString) return '-';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return String(dateString);
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const day = date.getDate().toString().padStart(2, '0');
+                return `${month}/${day}`;
+            } catch (error) {
+                return String(dateString) || '-';
+            }
+        }
+
         function calculateOverdueDays(dueDate) {
             if (!dueDate) return null;
             const due = new Date(dueDate + 'T00:00:00');
@@ -2735,7 +2692,7 @@
 
                 if (isZeroAmount) {
                     tr.classList.add('completed-gray-row');
-                } else if (overdueDays >= 10) {
+                } else if (overdueDays >= 7) {
                     tr.classList.add('overdue-pink-row');
                 }
 
@@ -2753,7 +2710,7 @@
                 tr.appendChild(createCell(row.schoolName || ''));
                 tr.appendChild(createCell('¥' + (parseAmount(row.amount) || 0).toLocaleString(), 'amount-display'));
                 tr.appendChild(createCell('¥' + (parseAmount(row.receivedAmount) || 0).toLocaleString(), 'received-amount-display'));
-                tr.appendChild(createCell(isZeroAmount ? '-' : (row.dueDate || '')));
+              tr.appendChild(createCell(isZeroAmount ? '-' : (row.dueDate ? formatDateUnified(row.dueDate) : '')));
 
                 const overdueCell = document.createElement('td');
                 if (isZeroAmount || overdueDays === null || overdueDays <= 0) {
@@ -2764,7 +2721,7 @@
                 }
                 tr.appendChild(overdueCell);
 
-                tr.appendChild(createCell(row.paymentDate || '-'));
+                tr.appendChild(createCell(row.paymentDate ? formatDateUnified(row.paymentDate) : '-'));
                 tr.appendChild(createCell(row.progress || ''));
                 tr.appendChild(createCell(row.assignedTo || ''));
 
@@ -2784,7 +2741,7 @@
                     const phoneBtn = document.createElement('a');
                     phoneBtn.href = 'tel:' + formatTelForIPhone(row.phone);
                     phoneBtn.className = 'action-btn phone-btn';
-                    phoneBtn.textContent = '📞';
+                    phoneBtn.textContent = '電話';
                     phoneDiv.appendChild(phoneBtn);
                 } else {
                     const phoneSpan = document.createElement('span');
@@ -2830,7 +2787,7 @@ const actionsCell = document.createElement('td');
             });
         }
 
-        function renderCardView() {
+                function renderCardView() {
             const container = document.getElementById('cardContainer');
             container.innerHTML = '';
 
@@ -2847,6 +2804,7 @@ const actionsCell = document.createElement('td');
                     card.classList.add('overdue-pink');
                 }
 
+                // ヘッダー（請求先名 + 未収金額）
                 const header = document.createElement('div');
                 header.className = 'card-header';
                 
@@ -2860,128 +2818,109 @@ const actionsCell = document.createElement('td');
                 
                 header.appendChild(schoolName);
                 header.appendChild(amount);
+                card.appendChild(header);
 
-                const createInfoRow = (label, value, extra = null) => {
-                    const rowEl = document.createElement('div');
-                    rowEl.className = 'card-info-row';
-                    
-                    const labelEl = document.createElement('span');
-                    labelEl.className = 'card-info-label';
-                    labelEl.textContent = label;
-                    
-                    const valueEl = document.createElement('span');
-                    if (typeof value === 'string') {
-                        valueEl.textContent = value;
-                    } else {
-                        valueEl.appendChild(value);
-                    }
-                    
-                    rowEl.appendChild(labelEl);
-                    rowEl.appendChild(valueEl);
-                    if (extra) rowEl.appendChild(extra);
-                    return rowEl;
-                };
-
-                // 期日表示（年なし、期日超過日数バッジ付き）
-                let dueDateValue = '';
+                // 行1: 担当者 + 期日・超過日数（同列・強調）
+                const row1 = document.createElement('div');
+                row1.className = 'card-row-dual';
+                
+                const assigneeCol = document.createElement('div');
+                assigneeCol.className = 'card-col';
+                assigneeCol.innerHTML = `<span class="card-info-label">担当者:</span>${row.assignedTo || '未割当'}`;
+                
+                const dueDateCol = document.createElement('div');
+                dueDateCol.className = 'card-col';
+                dueDateCol.style.textAlign = 'right';
+                
+                let dueDateText = '';
                 if (isZeroAmount) {
-                    dueDateValue = '-';
+                    dueDateText = `<span class="card-info-label">期日:</span><span class="card-due-emphasis">-</span>`;
                 } else if (row.dueDate) {
-                    const date = new Date(row.dueDate);
-                    dueDateValue = `${date.getMonth() + 1}-${date.getDate().toString().padStart(2, '0')}`;
+                    dueDateText = `<span class="card-info-label">期日:</span><span class="card-due-emphasis">${formatDateUnified(row.dueDate)}</span>`;
+                    if (overdueDays > 0) {
+                        const overdueClass = overdueDays >= 7 ? 'danger' : (overdueDays >= 3 ? 'warning' : 'normal');
+                        dueDateText += `<span class="card-overdue ${overdueClass}">[${overdueDays}日]</span>`;
+                    }
                 } else {
-                    dueDateValue = '未設定';
+                    dueDateText = `<span class="card-info-label">期日:</span><span class="card-due-emphasis">未設定</span>`;
                 }
+                dueDateCol.innerHTML = dueDateText;
+                
+                row1.appendChild(assigneeCol);
+                row1.appendChild(dueDateCol);
+                card.appendChild(row1);
 
-                const overdueTag = document.createElement('span');
-                overdueTag.className = 'card-overdue';
-                if (isZeroAmount || overdueDays === null || overdueDays <= 0) {
-                    overdueTag.textContent = '-';
-                    overdueTag.classList.add('normal');
-                } else if (overdueDays >= 7) {
-                    overdueTag.textContent = `${overdueDays}日`;
-                    overdueTag.classList.add('danger');
-                } else if (overdueDays >= 3) {
-                    overdueTag.textContent = `${overdueDays}日`;
-                    overdueTag.classList.add('warning');
-                } else {
-                    overdueTag.textContent = `${overdueDays}日`;
-                    overdueTag.classList.add('normal');
-                }
-                const dueDateRow = createInfoRow('期日:', dueDateValue, overdueTag);
+                // 行2: 進捗 + 入金予定日（同列）
+                const row2 = document.createElement('div');
+                row2.className = 'card-row-dual';
+                
+                const progressCol = document.createElement('div');
+                progressCol.className = 'card-col';
+                progressCol.innerHTML = `<span class="card-info-label">進捗:</span>${row.progress || ''}`;
+                
+                const paymentCol = document.createElement('div');
+                paymentCol.className = 'card-col';
+                paymentCol.style.textAlign = 'right';
+                paymentCol.innerHTML = `<span class="card-info-label">予定:</span>${row.paymentDate ? formatDateUnified(row.paymentDate) : '未設定'}`;
+                
+                row2.appendChild(progressCol);
+                row2.appendChild(paymentCol);
+                card.appendChild(row2);
 
+                // 行3: 電話番号（単独）
+                const phoneRow = document.createElement('div');
+                phoneRow.className = 'card-info-row';
+                phoneRow.innerHTML = `<span class="card-info-label">電話:</span>${row.phone || '未登録'}`;
+                card.appendChild(phoneRow);
+
+                // 行4: 備考（単独）
+                const notesRow = document.createElement('div');
+                notesRow.className = 'card-info-row';
+                notesRow.innerHTML = `<span class="card-info-label">備考:</span>${row.notes || '-'}`;
+                card.appendChild(notesRow);
+
+                // 行5: 最終更新（単独・短縮）
+                const updatedRow = document.createElement('div');
+                updatedRow.className = 'card-info-row';
+                updatedRow.style.fontSize = '0.85em';
+                updatedRow.style.color = '#666';
+                updatedRow.innerHTML = `<span class="card-info-label">更新:</span>${row.lastUpdated ? formatDateTimeMobile(row.lastUpdated) : '-'}`;
+                card.appendChild(updatedRow);
+
+                // アクションボタン（3ボタン・アイコンなし）
                 const actions = document.createElement('div');
                 actions.className = 'card-actions';
 
+                // 電話ボタン（条件維持）
                 if (isIOS() && currentUser && currentUser.role === 'staff') {
                     const phoneBtn = document.createElement('a');
                     phoneBtn.className = 'card-action-btn card-phone-btn';
                     if (row.phone) {
                         phoneBtn.href = 'tel:' + formatTelForIPhone(row.phone);
-                        phoneBtn.textContent = '📞 電話';
+                        phoneBtn.textContent = '電話';
                     } else {
-                        phoneBtn.textContent = '📞 未登録';
+                        phoneBtn.textContent = '電話';
                         phoneBtn.style.opacity = '0.6';
                         phoneBtn.style.pointerEvents = 'none';
                     }
                     actions.appendChild(phoneBtn);
                 }
 
-const editBtn = document.createElement('button');
+                // 編集ボタン
+                const editBtn = document.createElement('button');
                 editBtn.className = 'card-action-btn card-edit-btn';
-                editBtn.textContent = '✏️ 編集';
+                editBtn.textContent = '編集';
                 editBtn.addEventListener('click', () => editRecord(index));
                 actions.appendChild(editBtn);
 
+                // 履歴ボタン
                 const histBtn = document.createElement('button');
                 histBtn.className = 'card-action-btn card-history-btn';
-                histBtn.textContent = '📋 履歴';
+                histBtn.textContent = '履歴';
                 histBtn.addEventListener('click', () => showHistory(row.schoolName, row.customerCode));
                 actions.appendChild(histBtn);
 
-                const expandBtn = document.createElement('button');
-                expandBtn.className = 'card-action-btn card-expand-btn';
-                expandBtn.textContent = '📋 展開';
-                expandBtn.addEventListener('click', () => toggleCardDetails(card, index));
-                actions.appendChild(expandBtn);
-
-                // 詳細情報（展開時）
-                const details = document.createElement('div');
-                details.className = 'card-details';
-                
-                const detailItems = [
-                    ['得意先コード:', row.customerCode || '-'],
-                    ['担当者:', row.assignedTo || '未割当'],
-                    ['進捗:', row.progress || ''],
-                    ['入金額:', '¥' + (parseAmount(row.receivedAmount) || 0).toLocaleString()],
-                    ['入金予定日:', row.paymentDate ? formatDateMobile(row.paymentDate) : '未設定'],
-                    ['電話番号:', row.phone || '未登録'],
-                    ['備考:', row.notes || '-'],
-                    ['最終更新:', row.lastUpdated ? formatDateTimeMobile(row.lastUpdated) : '-'],
-                    ['バージョン:', row.version || '1']
-                ];
-
-                detailItems.forEach(([label, value]) => {
-                    const detailRow = document.createElement('div');
-                    detailRow.className = 'card-detail-row';
-                    
-                    const labelEl = document.createElement('span');
-                    labelEl.className = 'card-detail-label';
-                    labelEl.textContent = label;
-                    
-                    const valueEl = document.createElement('span');
-                    valueEl.textContent = value;
-                    
-                    detailRow.appendChild(labelEl);
-                    detailRow.appendChild(valueEl);
-                    details.appendChild(detailRow);
-                });
-
-                card.appendChild(header);
-                card.appendChild(dueDateRow);
                 card.appendChild(actions);
-                card.appendChild(details);
-
                 container.appendChild(card);
             });
         }
