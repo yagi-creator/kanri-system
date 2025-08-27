@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="塾入金管理">
     <meta name="theme-color" content="#007bff">
-    <title>塾入金管理システム v3.3 完全実装版</title>
+    <title>塾入金管理システム v4.0</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
@@ -60,43 +60,9 @@
 
         .login-box h2 {
             text-align: center;
-            margin-bottom: 18px;
+            margin-bottom: 30px;
             color: #333;
             font-size: 24px;
-        }
-
-        .subtitle {
-            text-align: center;
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 20px;
-        }
-
-        .complete-badge {
-            background: #28a745;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: bold;
-            margin-left: 8px;
-        }
-
-        .new-badge {
-            background: #ff6b35;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: bold;
-            margin-left: 8px;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
         }
 
         /* Apps Script URL設定 */
@@ -261,14 +227,25 @@
 
         .login-btn { width: 100%; }
 
-        .info-note {
-            font-size: 12px;
+        .error-message, .success-message {
             margin-top: 15px;
-            padding: 12px;
-            background: #e3f2fd;
-            border-radius: 6px;
-            color: #1565c0;
+            font-size: 14px;
             text-align: center;
+            border-radius: 6px;
+            padding: 12px;
+        }
+
+        .error-message {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            display: none;
+        }
+
+        .success-message {
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
         }
 
         /* メインコンテンツ */
@@ -277,7 +254,7 @@
         .header {
             background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
             color: white;
-            padding: 20px;
+            padding: 12px 20px;
             border-radius: 12px;
             margin-bottom: 20px;
             display: flex;
@@ -287,12 +264,11 @@
         }
 
         .header h1 { margin: 0; font-size: 22px; }
-        .version-info { font-size: 12px; opacity: 0.9; margin-top: 4px; }
         .user-info { text-align: right; }
         .user-actions {
             display: flex;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 8px;
+            margin-top: 8px;
             align-items: center;
             justify-content: flex-end;
         }
@@ -301,11 +277,11 @@
             background: rgba(255,255,255,0.2);
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 6px 12px;
             border-radius: 6px;
             cursor: pointer;
-            min-height: 36px;
-            font-size: 13px;
+            min-height: 32px;
+            font-size: 12px;
             transition: background-color 0.3s;
         }
 
@@ -365,6 +341,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             text-align: center;
             transition: transform 0.2s ease;
+            cursor: pointer;
         }
 
         .stat-card:hover { transform: translateY(-2px); }
@@ -386,13 +363,6 @@
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
-        }
-
-        .sort-active {
-            background: #0056b3 !important;
-            color: white !important;
-            font-weight: bold;
-            box-shadow: 0 2px 8px rgba(0, 86, 179, 0.3);
         }
 
         .search-input {
@@ -790,26 +760,9 @@
             text-align: left;
             font-weight: 600;
             border-bottom: 2px solid #dee2e6;
-            cursor: pointer;
             font-size: 13px;
             transition: background-color 0.2s ease;
             position: relative;
-        }
-
-        th:hover { background: #e9ecef; }
-
-        th.sort-asc::after {
-            content: ' ▲';
-            position: absolute;
-            right: 8px;
-            color: #007bff;
-        }
-
-        th.sort-desc::after {
-            content: ' ▼';
-            position: absolute;
-            right: 8px;
-            color: #007bff;
         }
 
         td {
@@ -938,6 +891,10 @@
         .juku-card:hover { transform: translateY(-2px); }
         .juku-card.overdue-pink { background-color: #ffe6ea; border-left-color: #dc3545; }
         .juku-card.completed-gray { background: #e9ecef; border-left-color: #6c757d; color: #6c757d; }
+        .juku-card.expanded {
+            background: #f8f9fa;
+            border-left-color: #28a745;
+        }
 
         .card-header {
             display: flex;
@@ -1003,6 +960,31 @@
         .card-phone-btn:disabled { background: #6c757d; opacity: 0.5; transform: none; }
         .card-edit-btn { background: #ffc107; color: #212529; }
         .card-history-btn { background: #17a2b8; color: white; }
+        .card-expand-btn { background: #6f42c1; color: white; }
+
+        .card-details {
+            display: none;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+        }
+
+        .card-details.visible {
+            display: block;
+        }
+
+        .card-detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 1.0em;
+        }
+
+        .card-detail-label {
+            font-weight: bold;
+            color: #666;
+            min-width: 100px;
+        }
 
         /* 履歴 */
         .history-table {
@@ -1071,27 +1053,6 @@
         .empty-state h3 { color: #666; margin-bottom: 15px; font-size: 20px; }
         .empty-state p { color: #999; margin-bottom: 25px; font-size: 16px; }
 
-        .error-message, .success-message {
-            margin-top: 15px;
-            font-size: 14px;
-            text-align: center;
-            border-radius: 6px;
-            padding: 12px;
-        }
-
-        .error-message {
-            color: #dc3545;
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            display: none;
-        }
-
-        .success-message {
-            color: #155724;
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-        }
-
         .sync-indicator {
             position: fixed;
             bottom: 20px;
@@ -1130,10 +1091,9 @@
         /* レスポンシブデザイン */
         @media (max-width: 768px) {
             .container { padding: 12px; }
-            .header { flex-direction: column; text-align: center; padding: 16px; }
+            .header { flex-direction: column; text-align: center; padding: 12px; }
             .user-info { margin-top: 15px; }
-            .user-actions { flex-direction: column; gap: 8px; }
-            .header-btn { width: 150px; }
+            .user-actions { flex-direction: row; gap: 8px; }
             .control-buttons { flex-direction: column; }
             .btn { width: 100%; margin-bottom: 8px; min-height: 44px; }
             .form-row { flex-direction: column; }
@@ -1150,7 +1110,9 @@
             .stat-value { font-size: 22px; }
             .confirmation-comparison { flex-direction: column; gap: 15px; }
             .confirmation-arrow { justify-content: center; transform: rotate(90deg); }
+            #btnToggleCards { display: inline-block; }
         }
+        #btnToggleCards { display: none; }
     </style>
 </head>
 <body>
@@ -1159,8 +1121,7 @@
     <!-- ログイン画面 -->
     <div id="loginScreen" class="login-container">
         <div class="login-box">
-            <h2>塾入金管理システム v3.3 <span class="complete-badge">完全実装版</span></h2>
-            <div class="subtitle">ID・パスワードでログイン</div>
+            <h2>塾入金管理システム v4.0</h2>
             
             <!-- Apps Script URL設定 -->
             <div class="url-config">
@@ -1169,9 +1130,7 @@
                     <input type="url" id="appScriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
                     <button type="button" class="url-save-btn" onclick="saveAppScriptUrl()">保存</button>
                 </div>
-                <div id="urlStatus" class="url-status info">
-                    Apps Script URLを入力してください。
-                </div>
+                <div id="urlStatus" class="url-status info">Apps Script URLを入力してください。</div>
             </div>
             
             <div class="form-group">
@@ -1183,14 +1142,7 @@
                 <input id="password" type="password" placeholder="パスワード" autocomplete="current-password">
             </div>
             <button class="btn btn-primary login-btn" onclick="login()">ログイン</button>
-            
             <div id="loginError" class="error-message"></div>
-            
-            <div class="info-note">
-                <strong>🚀 v3.3 完全実装版</strong><br>
-                入金確認モーダル・履歴・編集機能搭載。PC/スマホ対応。<br>
-                <small style="opacity: 0.8;">管理者/担当者権限・セキュア通信対応</small>
-            </div>
         </div>
     </div>
 
@@ -1200,8 +1152,7 @@
             <!-- ヘッダー -->
             <div class="header">
                 <div>
-                    <h1>塾入金管理システム v3.3 <span class="complete-badge">完全実装版</span></h1>
-                    <div class="version-info">入金確認モーダル・履歴・編集・全環境対応</div>
+                    <h1>塾入金管理システム v4.0</h1>
                     <div id="lastEditInfo" style="font-size: 13px; opacity: 0.9; margin-top: 4px;">最終編集: -</div>
                 </div>
                 <div class="user-info">
@@ -1215,25 +1166,21 @@
                 </div>
             </div>
 
-            <!-- 統計情報 -->
+            <!-- 統計情報（4枚） -->
             <div class="stats">
-                <div class="stat-card">
+                <div class="stat-card" onclick="showAssigneeDetail('未収金件数')">
                     <div class="stat-value" id="totalRecords">0</div>
-                    <div class="stat-label">有効データ数</div>
+                    <div class="stat-label">未収金件数</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" onclick="showAssigneeDetail('未収金総額')">
                     <div class="stat-value" id="totalAmount">¥0</div>
-                    <div class="stat-label">総未収金額</div>
+                    <div class="stat-label">未収金総額</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="totalReceived">¥0</div>
-                    <div class="stat-label">総入金額</div>
-                </div>
-                <div class="stat-card">
+                <div class="stat-card" onclick="showAssigneeDetail('期限超過')">
                     <div class="stat-value" id="overdueCount">0</div>
                     <div class="stat-label">期限超過</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" onclick="showAssigneeDetail('期限間近')">
                     <div class="stat-value" id="dueSoonCount">0</div>
                     <div class="stat-label">期限間近</div>
                 </div>
@@ -1241,7 +1188,7 @@
 
             <!-- 接続設定パネル -->
             <div id="settingsPanel" class="panel settings-panel">
-                <h3>🔗 接続設定 <span class="complete-badge">v3.3対応</span></h3>
+                <h3>🔗 接続設定</h3>
                 <div class="settings-row">
                     <label>Apps Script URL:</label>
                     <input type="text" id="sheetsUrl" placeholder="https://script.google.com/macros/s/.../exec">
@@ -1261,9 +1208,6 @@
                     <button class="btn btn-secondary" onclick="hideSettings()">閉じる</button>
                     <span id="syncStatus" style="margin-left: 15px; font-weight: 500;"></span>
                 </div>
-                <div style="margin-top: 12px; font-size: 12px; color: #666; line-height: 1.5;">
-                    対応するApps Script URLを入力してください。GET/POSTは自動切替。入金確認モーダルはPCで利用可能。
-                </div>
             </div>
 
             <!-- 操作メニュー -->
@@ -1274,20 +1218,27 @@
                     
                     <!-- 入金処理ボタン（PC環境でのみ表示） -->
                     <button class="btn btn-payment" onclick="showPaymentModal()" id="btnPaymentProcess" style="display: none;">
-                        💰 入金処理確認モーダル <span class="new-badge">NEW!</span>
+                        💰 入金処理確認モーダル
                     </button>
                     
                     <button class="btn btn-success" onclick="exportToExcel()" id="btnExportExcel">📊 Excelエクスポート</button>
                     <button class="btn btn-info" onclick="showSettings()">⚙️ 接続設定</button>
                     
-                    <button class="btn btn-info" onclick="sortByDueDate(true, this)">📅 期日近い順</button>
-                    <button class="btn btn-secondary" onclick="sortByDueDate(false, this)">📅 期日遠い順</button>
-                    <button class="btn btn-info" onclick="sortByLastUpdated(true, this)">🕒 更新新しい順</button>
-                    <button class="btn btn-secondary" onclick="sortByLastUpdated(false, this)">🕒 更新古い順</button>
+                    <!-- 並べ替えプルダウン -->
+                    <select id="sortDropdown" onchange="applySortFromDropdown()" class="btn btn-secondary" style="min-width: 200px;">
+                        <option value="dueDate_asc" selected>期日順（昇順）</option>
+                        <option value="dueDate_desc">期日順（降順）</option>
+                        <option value="assignedTo_asc">担当者名順（昇順）</option>
+                        <option value="assignedTo_desc">担当者名順（降順）</option>
+                        <option value="lastUpdated_asc">最終更新日時順（昇順）</option>
+                        <option value="lastUpdated_desc">最終更新日時順（降順）</option>
+                    </select>
                     
                     <select id="assignedToFilter" onchange="updateAssignedToFilter()" class="btn btn-secondary" style="min-width: 150px;">
                         <option value="">担当者: 全て</option>
                     </select>
+                    
+                    <button class="btn btn-info" onclick="toggleAllCards()" id="btnToggleCards" style="display: none;">すべて展開</button>
                     
                     <button class="btn btn-secondary" onclick="refreshData()">🔄 データ更新</button>
                     <button class="btn btn-danger" onclick="bulkDeleteCompleted()" id="btnBulkDelete">🗑️ 0円案件を一括削除</button>
@@ -1311,17 +1262,17 @@
                 <table id="dataTable">
                     <thead>
                         <tr>
-                            <th onclick="sortTable(0)">請求先名</th>
-                            <th onclick="sortTable(1)">未収金額</th>
-                            <th onclick="sortTable(2)">入金額</th>
-                            <th onclick="sortTable(3)">期日</th>
-                            <th onclick="sortTable(4)">超過日数</th>
-                            <th onclick="sortTable(5)">入金予定日</th>
-                            <th onclick="sortTable(6)">進捗</th>
-                            <th onclick="sortTable(7)">担当者</th>
-                            <th onclick="sortTable(8)">電話番号</th>
-                            <th onclick="sortTable(9)">最終更新</th>
-                            <th onclick="sortTable(10)">備考</th>
+                            <th>請求先名</th>
+                            <th>未収金額</th>
+                            <th>入金額</th>
+                            <th>期日</th>
+                            <th>超過日数</th>
+                            <th>入金予定日</th>
+                            <th>進捗</th>
+                            <th>担当者</th>
+                            <th>電話番号</th>
+                            <th>最終更新</th>
+                            <th>備考</th>
                             <th>操作</th>
                         </tr>
                     </thead>
@@ -1331,6 +1282,17 @@
 
             <!-- カード表示（モバイル） -->
             <div id="cardContainer" class="card-container"></div>
+        </div>
+    </div>
+
+    <!-- 担当者別詳細表示モーダル -->
+    <div id="assigneeDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="assigneeDetailTitle">担当者別詳細</h3>
+                <span class="close" onclick="closeAssigneeDetailModal()">&times;</span>
+            </div>
+            <div id="assigneeDetailContent"></div>
         </div>
     </div>
 
@@ -1358,9 +1320,7 @@
             <div class="processing-indicator" id="processingIndicator">
                 <div class="processing-spinner"></div>
                 <div class="processing-text">入金データを処理中...</div>
-                <div style="font-size: 14px; color: #666; margin-top: 10px;">
-                    大量データの場合、数分かかる場合があります
-                </div>
+                <div style="font-size: 14px; color: #666; margin-top: 10px;">大量データの場合、数分かかる場合があります</div>
             </div>
             
             <div class="result-summary hidden" id="resultSummary">
@@ -1416,51 +1376,33 @@
             
             <div class="confirmation-progress" id="confirmationProgress">
                 <div class="progress-text" id="progressText"></div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar" id="progressBar"></div>
-                </div>
+                <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
             </div>
             
             <div class="confirmation-comparison">
                 <div class="confirmation-side spreadsheet">
                     <h4>📊 スプレッドシート</h4>
-                    <div class="confirmation-detail">
-                        <strong>請求先名:</strong> <span id="confirmSheetSchoolName"></span>
-                    </div>
-                    <div class="confirmation-detail">
-                        <strong>未収金額:</strong> <span id="confirmSheetAmount"></span>
-                    </div>
+                    <div class="confirmation-detail"><strong>請求先名:</strong> <span id="confirmSheetSchoolName"></span></div>
+                    <div class="confirmation-detail"><strong>未収金額:</strong> <span id="confirmSheetAmount"></span></div>
                 </div>
                 
                 <div class="confirmation-arrow">→</div>
                 
                 <div class="confirmation-side excel">
                     <h4>📋 Excel</h4>
-                    <div class="confirmation-detail">
-                        <strong>請求先名:</strong> <span id="confirmExcelSchoolName"></span>
-                    </div>
-                    <div class="confirmation-detail">
-                        <strong>入金額:</strong> <span id="confirmExcelAmount"></span>
-                    </div>
+                    <div class="confirmation-detail"><strong>請求先名:</strong> <span id="confirmExcelSchoolName"></span></div>
+                    <div class="confirmation-detail"><strong>入金額:</strong> <span id="confirmExcelAmount"></span></div>
                 </div>
             </div>
             
             <div class="confirmation-actions">
-                <button class="confirmation-btn process" onclick="confirmCurrentItem(true)">
-                    ✅ 処理する
-                </button>
-                <button class="confirmation-btn skip" onclick="confirmCurrentItem(false)">
-                    ❌ スキップ
-                </button>
+                <button class="confirmation-btn process" onclick="confirmCurrentItem(true)">✅ 処理する</button>
+                <button class="confirmation-btn skip" onclick="confirmCurrentItem(false)">❌ スキップ</button>
             </div>
             
             <div class="confirmation-bulk-actions">
-                <button class="confirmation-bulk-btn" onclick="skipAllConfirmations()">
-                    全てスキップ
-                </button>
-                <button class="confirmation-bulk-btn" onclick="processAllConfirmations()">
-                    全て処理
-                </button>
+                <button class="confirmation-bulk-btn" onclick="skipAllConfirmations()">全てスキップ</button>
+                <button class="confirmation-bulk-btn" onclick="processAllConfirmations()">全て処理</button>
             </div>
         </div>
     </div>
@@ -1509,12 +1451,12 @@
                         <label>担当者 *</label>
                         <select id="editAssignedTo" required>
                             <option value="">選択してください</option>
-                            <option value="谷口">谷口</option>
                             <option value="島谷">島谷</option>
                             <option value="門戸">門戸</option>
                             <option value="梨木">梨木</option>
                             <option value="村上">村上</option>
                             <option value="八木">八木</option>
+                            <option value="特殊">特殊</option>
                         </select>
                     </div>
                 </div>
@@ -1546,9 +1488,7 @@
             <div class="modal-header">
                 <h3>📋 編集履歴</h3>
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <button class="btn btn-sm btn-outline-primary" onclick="toggleHistorySort()" id="historySortBtn">
-                        🔄 新しい順
-                    </button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="toggleHistorySort()" id="historySortBtn">🔄 新しい順</button>
                     <span class="close" onclick="closeHistoryModal()">&times;</span>
                 </div>
             </div>
@@ -1587,6 +1527,7 @@
         let syncing = false;
         let schoolLastEditMap = new Map();
         let selectedPaymentFile = null;
+        let allCardsExpanded = false;
 
         // 確認モーダル用変数
         let confirmationQueue = [];
@@ -1643,6 +1584,11 @@
             const paymentBtn = document.getElementById('btnPaymentProcess');
             if (paymentBtn) {
                 paymentBtn.style.display = isPCEnvironment() ? '' : 'none';
+            }
+            
+            const toggleBtn = document.getElementById('btnToggleCards');
+            if (toggleBtn) {
+                toggleBtn.style.display = window.innerWidth <= 768 ? '' : 'none';
             }
         }
 
@@ -1766,6 +1712,9 @@
             loadData();
             loadSettings();
             setupAutoUpdate();
+            
+            // 初期ソートを適用
+            applySortFromDropdown();
         }
 
         function logout() {
@@ -1787,6 +1736,188 @@
             if (errorDiv) errorDiv.style.display = 'none';
             
             showSyncIndicator('ログアウトしました', 'success');
+        }
+
+        // 担当者別詳細表示機能
+        function showAssigneeDetail(statType) {
+            const activeData = allData.filter(row => !isZeroAmountRecord(row));
+            const assigneeStats = new Map();
+            
+            // 担当者リスト（谷口除外、特殊は敬称なし）
+            const validAssignees = ['島谷', '門戸', '梨木', '村上', '八木'];
+            
+            activeData.forEach(row => {
+                let assignedTo = row.assignedTo || '未割当';
+                
+                // 谷口は除外
+                if (assignedTo === '谷口') return;
+                
+                // 特殊の場合は敬称なしで表示
+                if (assignedTo === '特殊') {
+                    assignedTo = '特殊';
+                } else if (!validAssignees.includes(assignedTo) && assignedTo !== '未割当') {
+                    assignedTo = '特殊';
+                }
+                
+                if (!assigneeStats.has(assignedTo)) {
+                    assigneeStats.set(assignedTo, { count: 0, amount: 0 });
+                }
+                
+                const stats = assigneeStats.get(assignedTo);
+                
+                switch (statType) {
+                    case '未収金件数':
+                        stats.count++;
+                        break;
+                    case '未収金総額':
+                        stats.amount += parseAmount(row.amount) || 0;
+                        break;
+                    case '期限超過':
+                        if (row.dueDate && calculateOverdueDays(row.dueDate) > 0) {
+                            stats.count++;
+                        }
+                        break;
+                    case '期限間近':
+                        if (row.dueDate) {
+                            const now = new Date();
+                            now.setHours(0, 0, 0, 0);
+                            const dueDateObj = new Date(row.dueDate + 'T00:00:00');
+                            const sevenDaysFromNow = new Date(now);
+                            sevenDaysFromNow.setDate(now.getDate() + 7);
+                            if (dueDateObj >= now && dueDateObj <= sevenDaysFromNow) {
+                                stats.count++;
+                            }
+                        }
+                        break;
+                }
+            });
+            
+            // 内訳表示HTML生成
+            let contentHTML = `<div style="font-weight: bold; margin-bottom: 15px;">${statType}の担当者別内訳</div>`;
+            
+            // 件数/金額順でソート
+            const sortedAssignees = Array.from(assigneeStats.entries())
+                .sort(([,a], [,b]) => {
+                    if (statType === '未収金総額') {
+                        return b.amount - a.amount;
+                    } else {
+                        return b.count - a.count;
+                    }
+                });
+            
+            if (sortedAssignees.length === 0) {
+                contentHTML += '<div style="text-align: center; color: #666;">該当データがありません</div>';
+            } else {
+                sortedAssignees.forEach(([assignedTo, stats]) => {
+                    let displayValue;
+                    if (statType === '未収金総額') {
+                        displayValue = stats.amount === 0 ? '¥0 🎉' : `¥${stats.amount.toLocaleString()}`;
+                    } else {
+                        displayValue = stats.count === 0 ? '0件 🎉' : `${stats.count}件`;
+                    }
+                    
+                    contentHTML += `
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+                            <span>${assignedTo}:</span>
+                            <span style="font-weight: bold;">${displayValue}</span>
+                        </div>
+                    `;
+                });
+            }
+            
+            document.getElementById('assigneeDetailTitle').textContent = `${statType}の担当者別内訳`;
+            document.getElementById('assigneeDetailContent').innerHTML = contentHTML;
+            document.getElementById('assigneeDetailModal').style.display = 'block';
+        }
+
+        function closeAssigneeDetailModal() {
+            document.getElementById('assigneeDetailModal').style.display = 'none';
+        }
+
+        // 並べ替えプルダウン処理
+        function applySortFromDropdown() {
+            const sortValue = document.getElementById('sortDropdown').value;
+            const [field, direction] = sortValue.split('_');
+            const ascending = direction === 'asc';
+            
+            filteredData.sort((a, b) => {
+                let aVal, bVal;
+                
+                switch (field) {
+                    case 'dueDate':
+                        aVal = a.dueDate ? new Date(a.dueDate) : new Date('9999-12-31');
+                        bVal = b.dueDate ? new Date(b.dueDate) : new Date('9999-12-31');
+                        break;
+                    case 'assignedTo':
+                        aVal = a.assignedTo || '';
+                        bVal = b.assignedTo || '';
+                        break;
+                    case 'lastUpdated':
+                        aVal = a.lastUpdated ? new Date(a.lastUpdated) : new Date('1900-01-01');
+                        bVal = b.lastUpdated ? new Date(b.lastUpdated) : new Date('1900-01-01');
+                        break;
+                    default:
+                        return 0;
+                }
+                
+                if (aVal instanceof Date && bVal instanceof Date) {
+                    return ascending ? aVal - bVal : bVal - aVal;
+                } else {
+                    return ascending ? 
+                        aVal.toString().localeCompare(bVal.toString()) : 
+                        bVal.toString().localeCompare(aVal.toString());
+                }
+            });
+            
+            // 0円レコードを末尾に移動
+            const nonZeroRecords = filteredData.filter(row => !isZeroAmountRecord(row));
+            const zeroRecords = filteredData.filter(row => isZeroAmountRecord(row));
+            filteredData = [...nonZeroRecords, ...zeroRecords];
+            
+            renderTable();
+        }
+
+        // 全カード展開機能
+        function toggleAllCards() {
+            const cards = document.querySelectorAll('.juku-card');
+            const btn = document.getElementById('btnToggleCards');
+            
+            allCardsExpanded = !allCardsExpanded;
+            
+            cards.forEach(card => {
+                const details = card.querySelector('.card-details');
+                const expandBtn = card.querySelector('.card-expand-btn');
+                
+                if (details) {
+                    if (allCardsExpanded) {
+                        card.classList.add('expanded');
+                        details.classList.add('visible');
+                        if (expandBtn) expandBtn.textContent = '📋 収納';
+                    } else {
+                        card.classList.remove('expanded');
+                        details.classList.remove('visible');
+                        if (expandBtn) expandBtn.textContent = '📋 展開';
+                    }
+                }
+            });
+            
+            btn.textContent = allCardsExpanded ? 'すべて収納' : 'すべて展開';
+        }
+
+        // カード個別展開機能
+        function toggleCardDetails(cardElement, index) {
+            const details = cardElement.querySelector('.card-details');
+            const expandBtn = cardElement.querySelector('.card-expand-btn');
+            
+            if (details.classList.contains('visible')) {
+                cardElement.classList.remove('expanded');
+                details.classList.remove('visible');
+                expandBtn.textContent = '📋 展開';
+            } else {
+                cardElement.classList.add('expanded');
+                details.classList.add('visible');
+                expandBtn.textContent = '📋 収納';
+            }
         }
 
         // 入金処理
@@ -2006,11 +2137,12 @@
             selectedPaymentFile = file;
             
             const fileInfo = document.getElementById('fileInfo');
-            fileInfo.innerHTML = `
-                <strong>選択されたファイル:</strong> ${file.name}<br>
-                <strong>サイズ:</strong> ${(file.size / 1024).toFixed(1)} KB<br>
-                <strong>更新日時:</strong> ${new Date(file.lastModified).toLocaleString('ja-JP')}
-            `;
+            const infoLines = [
+                `選択されたファイル: ${file.name}`,
+                `サイズ: ${(file.size / 1024).toFixed(1)} KB`,
+                `更新日時: ${new Date(file.lastModified).toLocaleString('ja-JP')}`
+            ];
+            fileInfo.textContent = infoLines.join(' / ');
             fileInfo.style.display = 'block';
             
             document.getElementById('btnProcessPayment').disabled = false;
@@ -2282,117 +2414,6 @@
             document.getElementById('historyModal').style.display = 'none';
         }
 
-        // ソート
-        function sortTable(columnIndex) {
-            if (sortColumn === columnIndex) {
-                sortDirection *= -1;
-            } else {
-                sortColumn = columnIndex;
-                sortDirection = 1;
-            }
-            
-            const headers = document.querySelectorAll('th');
-            headers.forEach((header, index) => {
-                header.classList.remove('sort-asc', 'sort-desc');
-                if (index === columnIndex) {
-                    header.classList.add(sortDirection === 1 ? 'sort-asc' : 'sort-desc');
-                }
-            });
-            
-            filteredData.sort((a, b) => {
-                let aVal, bVal;
-                
-                switch (columnIndex) {
-                    case 0:
-                        aVal = a.schoolName || '';
-                        bVal = b.schoolName || '';
-                        break;
-                    case 1:
-                        aVal = parseAmount(a.amount) || 0;
-                        bVal = parseAmount(b.amount) || 0;
-                        break;
-                    case 2:
-                        aVal = parseAmount(a.receivedAmount) || 0;
-                        bVal = parseAmount(b.receivedAmount) || 0;
-                        break;
-                    case 3:
-                        aVal = a.dueDate || '';
-                        bVal = b.dueDate || '';
-                        break;
-                    case 4:
-                        aVal = calculateOverdueDays(a.dueDate) || 0;
-                        bVal = calculateOverdueDays(b.dueDate) || 0;
-                        break;
-                    case 5:
-                        aVal = a.paymentDate || '';
-                        bVal = b.paymentDate || '';
-                        break;
-                    case 6:
-                        aVal = a.progress || '';
-                        bVal = b.progress || '';
-                        break;
-                    case 7:
-                        aVal = a.assignedTo || '';
-                        bVal = b.assignedTo || '';
-                        break;
-                    case 8:
-                        aVal = a.phone || '';
-                        bVal = b.phone || '';
-                        break;
-                    case 9:
-                        aVal = a.lastUpdated || '';
-                        bVal = b.lastUpdated || '';
-                        break;
-                    case 10:
-                        aVal = a.notes || '';
-                        bVal = b.notes || '';
-                        break;
-                    default:
-                        return 0;
-                }
-                
-                if (typeof aVal === 'number' && typeof bVal === 'number') {
-                    return (aVal - bVal) * sortDirection;
-                } else {
-                    return aVal.toString().localeCompare(bVal.toString()) * sortDirection;
-                }
-            });
-            
-            renderTable();
-        }
-
-        function sortByDueDate(ascending, button) {
-            clearSortButtons();
-            button.classList.add('sort-active');
-            
-            filteredData.sort((a, b) => {
-                const aDate = a.dueDate ? new Date(a.dueDate) : new Date('9999-12-31');
-                const bDate = b.dueDate ? new Date(b.dueDate) : new Date('9999-12-31');
-                return ascending ? aDate - bDate : bDate - aDate;
-            });
-            
-            renderTable();
-        }
-
-        function sortByLastUpdated(ascending, button) {
-            clearSortButtons();
-            button.classList.add('sort-active');
-            
-            filteredData.sort((a, b) => {
-                const aDate = a.lastUpdated ? new Date(a.lastUpdated) : new Date('1900-01-01');
-                const bDate = b.lastUpdated ? new Date(b.lastUpdated) : new Date('1900-01-01');
-                return ascending ? bDate - aDate : aDate - bDate;
-            });
-            
-            renderTable();
-        }
-
-        function clearSortButtons() {
-            document.querySelectorAll('.control-buttons .btn').forEach(btn => {
-                btn.classList.remove('sort-active');
-            });
-        }
-
         // ユーティリティ
         function parseAmount(value) {
             if (typeof value === 'number') return value;
@@ -2662,7 +2683,9 @@
             const zeroRecords = tempFiltered.filter(row => isZeroAmountRecord(row));
             filteredData = [...nonZeroRecords, ...zeroRecords];
 
-            renderTable();
+            // 初期ソートを適用
+            applySortFromDropdown();
+            
             updateStats();
             updateEmptyState();
         }
@@ -2820,7 +2843,7 @@
                 
                 if (isZeroAmount) {
                     card.classList.add('completed-gray');
-                } else if (overdueDays >= 10) {
+                } else if (overdueDays >= 3) {
                     card.classList.add('overdue-pink');
                 }
 
@@ -2859,54 +2882,33 @@
                     return rowEl;
                 };
 
-                const dueDateValue = isZeroAmount ? '-' : (row.dueDate || '未設定');
+                // 期日表示（年なし、期日超過日数バッジ付き）
+                let dueDateValue = '';
+                if (isZeroAmount) {
+                    dueDateValue = '-';
+                } else if (row.dueDate) {
+                    const date = new Date(row.dueDate);
+                    dueDateValue = `${date.getMonth() + 1}-${date.getDate().toString().padStart(2, '0')}`;
+                } else {
+                    dueDateValue = '未設定';
+                }
+
                 const overdueTag = document.createElement('span');
                 overdueTag.className = 'card-overdue';
                 if (isZeroAmount || overdueDays === null || overdueDays <= 0) {
                     overdueTag.textContent = '-';
                     overdueTag.classList.add('normal');
-                } else if (overdueDays >= 3) {
+                } else if (overdueDays >= 7) {
                     overdueTag.textContent = `${overdueDays}日`;
                     overdueTag.classList.add('danger');
-                } else {
+                } else if (overdueDays >= 3) {
                     overdueTag.textContent = `${overdueDays}日`;
                     overdueTag.classList.add('warning');
+                } else {
+                    overdueTag.textContent = `${overdueDays}日`;
+                    overdueTag.classList.add('normal');
                 }
                 const dueDateRow = createInfoRow('期日:', dueDateValue, overdueTag);
-
-                const assignRow = createInfoRow('担当者:', row.assignedTo || '');
-                const progressEl = document.createElement('span');
-                progressEl.textContent = `進捗: ${row.progress || ''}`;
-                assignRow.appendChild(progressEl);
-
-                const phoneValue = document.createElement('span');
-                if (isIOS() && currentUser && currentUser.role === 'staff' && row.phone) {
-                    const phoneLink = document.createElement('a');
-                    phoneLink.href = 'tel:' + formatTelForIPhone(row.phone);
-                    phoneLink.className = 'phone-number';
-                    phoneLink.textContent = row.phone;
-                    phoneLink.style.color = '#007bff';
-                    phoneLink.style.textDecoration = 'underline';
-                    phoneValue.appendChild(phoneLink);
-                } else {
-                    phoneValue.className = 'phone-number';
-                    phoneValue.textContent = row.phone || '未登録';
-                }
-                const phoneRow = createInfoRow('電話番号:', phoneValue);
-
-                const paymentRow = createInfoRow('入金予定日:', row.paymentDate || '未設定');
-                const receivedAmountRow = createInfoRow('入金額:', '¥' + (parseAmount(row.receivedAmount) || 0).toLocaleString());
-
-                const updateValue = row.lastUpdated ? formatDateTimeMobile(row.lastUpdated) : '-';
-                const updateRow = createInfoRow('最終更新:', updateValue);
-                updateRow.querySelector('span:last-child').style.fontSize = '0.85em';
-                updateRow.querySelector('span:last-child').style.color = '#666';
-
-                let notesRow = null;
-                if (row.notes) {
-                    const notesText = row.notes.length > 30 ? row.notes.substring(0, 30) + '...' : row.notes;
-                    notesRow = createInfoRow('備考:', notesText);
-                }
 
                 const actions = document.createElement('div');
                 actions.className = 'card-actions';
@@ -2916,7 +2918,7 @@
                     phoneBtn.className = 'card-action-btn card-phone-btn';
                     if (row.phone) {
                         phoneBtn.href = 'tel:' + formatTelForIPhone(row.phone);
-                        phoneBtn.textContent = '📞 発信';
+                        phoneBtn.textContent = '📞 電話';
                     } else {
                         phoneBtn.textContent = '📞 未登録';
                         phoneBtn.style.opacity = '0.6';
@@ -2931,21 +2933,48 @@
                 editBtn.addEventListener('click', () => editRecord(index));
                 actions.appendChild(editBtn);
 
-                const histBtn = document.createElement('button');
-                histBtn.className = 'card-action-btn card-history-btn';
-                histBtn.textContent = '📋 履歴';
-                histBtn.addEventListener('click', () => showHistory(row.schoolName, row.customerCode));
-                actions.appendChild(histBtn);
+                const expandBtn = document.createElement('button');
+                expandBtn.className = 'card-action-btn card-expand-btn';
+                expandBtn.textContent = '📋 展開';
+                expandBtn.addEventListener('click', () => toggleCardDetails(card, index));
+                actions.appendChild(expandBtn);
+
+                // 詳細情報（展開時）
+                const details = document.createElement('div');
+                details.className = 'card-details';
+                
+                const detailItems = [
+                    ['得意先コード:', row.customerCode || '-'],
+                    ['担当者:', row.assignedTo || '未割当'],
+                    ['進捗:', row.progress || ''],
+                    ['入金額:', '¥' + (parseAmount(row.receivedAmount) || 0).toLocaleString()],
+                    ['入金予定日:', row.paymentDate ? formatDateMobile(row.paymentDate) : '未設定'],
+                    ['電話番号:', row.phone || '未登録'],
+                    ['備考:', row.notes || '-'],
+                    ['最終更新:', row.lastUpdated ? formatDateTimeMobile(row.lastUpdated) : '-'],
+                    ['バージョン:', row.version || '1']
+                ];
+
+                detailItems.forEach(([label, value]) => {
+                    const detailRow = document.createElement('div');
+                    detailRow.className = 'card-detail-row';
+                    
+                    const labelEl = document.createElement('span');
+                    labelEl.className = 'card-detail-label';
+                    labelEl.textContent = label;
+                    
+                    const valueEl = document.createElement('span');
+                    valueEl.textContent = value;
+                    
+                    detailRow.appendChild(labelEl);
+                    detailRow.appendChild(valueEl);
+                    details.appendChild(detailRow);
+                });
 
                 card.appendChild(header);
                 card.appendChild(dueDateRow);
-                card.appendChild(assignRow);
-                card.appendChild(phoneRow);
-                card.appendChild(paymentRow);
-                card.appendChild(receivedAmountRow);
-                card.appendChild(updateRow);
-                if (notesRow) card.appendChild(notesRow);
                 card.appendChild(actions);
+                card.appendChild(details);
 
                 container.appendChild(card);
             });
@@ -2954,11 +2983,10 @@
         function updateStats() {
             const now = new Date();
             now.setHours(0, 0, 0, 0);
-            const activeData = filteredData.filter(row => !isZeroAmountRecord(row));
+            const activeData = allData.filter(row => !isZeroAmountRecord(row));
             
             const total = activeData.length;
             const totalAmount = activeData.reduce((sum, row) => sum + (parseAmount(row.amount) || 0), 0);
-            const totalReceived = allData.reduce((sum, row) => sum + (parseAmount(row.receivedAmount) || 0), 0);
             const overdue = activeData.filter(row => row.dueDate && calculateOverdueDays(row.dueDate) > 0).length;
             
             const dueSoon = activeData.filter(row => {
@@ -2971,7 +2999,6 @@
 
             document.getElementById('totalRecords').textContent = total;
             document.getElementById('totalAmount').textContent = `¥${totalAmount.toLocaleString()}`;
-            document.getElementById('totalReceived').textContent = `¥${totalReceived.toLocaleString()}`;
             document.getElementById('overdueCount').textContent = overdue;
             document.getElementById('dueSoonCount').textContent = dueSoon;
         }
@@ -3007,7 +3034,7 @@
             document.getElementById('settingsPanel').style.display = 'none';
         }
 
- function saveSettings() {
+        function saveSettings() {
             const rawUrl = document.getElementById('sheetsUrl').value.trim();
             
             if (!isAppsScriptUrl(rawUrl)) {
@@ -3024,7 +3051,7 @@
             localStorage.setItem(APPS_SCRIPT_URL_KEY, rawUrl);
             appScriptUrl = rawUrl;
             setupAutoUpdate();
-            alert('設定を保存しました（v3.3完全実装版）');
+            alert('設定を保存しました（v4.0）');
         }
 
         function loadSettings() {
@@ -3130,7 +3157,7 @@
             })));
             
             XLSX.utils.book_append_sheet(wb, ws, 'データ');
-            XLSX.writeFile(wb, 'juku_data_v33_complete.xlsx');
+            XLSX.writeFile(wb, 'juku_data_v40.xlsx');
         }
 
         // フォーム処理・イベントリスナー
@@ -3239,11 +3266,13 @@
             const historyModal = document.getElementById('historyModal');
             const paymentModal = document.getElementById('paymentModal');
             const confirmationModal = document.getElementById('confirmationModal');
+            const assigneeDetailModal = document.getElementById('assigneeDetailModal');
             
             if (event.target === editModal) closeModal();
             if (event.target === historyModal) closeHistoryModal();
             if (event.target === paymentModal) closePaymentModal();
             if (event.target === confirmationModal) cancelAllConfirmations();
+            if (event.target === assigneeDetailModal) closeAssigneeDetailModal();
         }
     </script>
 </body>
