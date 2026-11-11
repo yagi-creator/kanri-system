@@ -1,5 +1,5 @@
 import sharedConfig from './firebase-config.mjs';
-import {initializeSharing} from './sharing-ui.mjs';
+import {initializeSharing} from './sharing-ui.mjs?v=2';
 import {key,date,plus,diff,holidays,closedReason,schedule,monday,afterCutoff} from './engine.mjs?v=mobile-20261111';
 import {japanNow} from './clock.mjs';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
