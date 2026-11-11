@@ -25,4 +25,8 @@ for(const day of ['2026-11-09','2026-11-10','2026-11-11','2026-11-12','2026-11-1
 const html=fs.readFileSync('index.html','utf8'),app=fs.readFileSync('app.mjs','utf8');const ids=[...html.matchAll(/id="([^"]+)"/g)].map(m=>m[1]);assert.equal(new Set(ids).size,ids.length);for(const match of app.matchAll(/\$\('#([\w-]+)'\)/g))assert.ok(ids.includes(match[1])||app.includes('id="'+match[1]+'"'),'missing DOM id '+match[1]);
 const {japanNow}=await import('./clock.mjs');assert.deepEqual(japanNow(new Date('2026-11-05T15:00:00Z')),{date:'2026-11-06',time:'00:00:00'});assert.deepEqual(japanNow(new Date('2026-11-05T04:59:59Z')),{date:'2026-11-05',time:'13:59:59'});
 assert.equal(schedule(p,'2026-11-05','16:00:00').after,false);assert.equal(schedule(p,'2026-11-05','16:00:01').after,true);
+assert.equal(schedule({...p,cutoff:14},'2026-11-05','13:59:59').after,false);assert.equal(schedule({...p,cutoff:14},'2026-11-05','14:00:00').after,true);
+for(const cutoff of [14,16])for(const time of ['09:00:00','14:00:00','17:00:00']){const mode=schedule({...p,cutoff},'2026-11-06',time,[],{nextDay:true});assert.equal(mode.accepted,'2026-11-09');assert.equal(mode.direct,'2026-11-10');assert.equal(mode.home,'2026-11-11');assert.equal(mode.forced,true)}
+assert.equal(schedule(p,'2026-11-20','09:00:00',[],{nextDay:true}).accepted,'2026-11-24');assert.equal(schedule(p,'2026-11-06','09:00:00',[event('test','2026-11-09')],{nextDay:true}).accepted,'2026-11-10');
+assert.equal(schedule(p,'2026-11-06','09:00:00',[],{nextDay:false}).accepted,'2026-11-06');
 console.log('PASS: manufacturer vs own closures, delivery stages, cutoff boundaries, weekends, holidays and substitute holidays, busy-period adjustments, year boundaries, 37 publishers and DOM references.');
