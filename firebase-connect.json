@@ -1,7 +1,7 @@
 {
-  "sessionId": "95556e4f-330a-4f34-b668-07b12ec7990a",
-  "expiresAt": "2026-11-11T10:37:22.362Z",
-  "authUrl": "https://auth.firebase.tools/login?code_challenge=DhuzI1iDHEllh5M7OQg76rpMpUr1YuiHfjAOuFJHafs&session=95556e4f-330a-4f34-b668-07b12ec7990a&attest=bJfL-MuXqD-vLW0MSR0VHEK0NsoDk4i91SvLSHECfro",
+  "sessionId": "e0fa631e-cfb3-4887-9365-f3f51071482c",
+  "expiresAt": "2026-11-11T11:06:48.088Z",
+  "authUrl": "https://auth.firebase.tools/login?code_challenge=4e-CUjDL8wS3ve5pQG8AuGfi_cO9-3P1oX6KhsHyfcs&session=e0fa631e-cfb3-4887-9365-f3f51071482c&attest=qawPxe4k_W3_8wek7CTF1x6wu3SS1Tp_GxPnUTnZ7AM",
   "publicKey": {
     "kty": "RSA",
     "n": "uwQQiaxWKGBqSSEQnu66rha9CgFzE143_t8-QGVNReeCPqxbh7CbCKoDQ1r8m1hvVm7vL7CU9lPuUpNxAgfQ-Dm3V4FMTaFd3LKUU84HnGgAPQ1czAlral5odKHx0HsMWK7efP7hVVSMrqTHBIUHa1Lj6eqNNm0Ar6UOuIZGrTT1KAZFl1EtsPQ3r6jFwqy0dCr-KecNuZTPPTprzBzEKvX5G2ZxHAuU9M0SfU33jSwoWNNsrnpx_Gq1F9_Jz8xnJKMuNQagYIOtsxS3WBHyWKTrMllbEZ_XCWUrGGAwFTUQsgTaSRDTGJHtZ7YZbgwi79bAegJKjCBcDw0sH6NkZkB22Zcrco8APTM0LGmW_baTGK5uALCsf_tHaeE1IEfknbDI24SKJDdqOWD5rQYywJ_eGAzxEQyqSqnuGjbnjOhwG6IKupofrotZSgXbq-AZb6QpuYL33FAJSTBxfLfSK4iNjZ_5b31US-8z33EpLZ_yUng419OvqphRiNpF-wlx",
