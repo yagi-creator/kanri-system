@@ -1,0 +1,8 @@
+{
+  "name": "kanri-system-shipping-guide",
+  "version": "0.1.0",
+  "private": true,
+  "description": "メーカーと自社物流の休業日を反映する宅・直納期早見表",
+  "engines": {"node": ">=24"},
+  "scripts": {"test": "node verify.mjs && node verify-ui.cjs"}
+}
