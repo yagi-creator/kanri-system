@@ -5,7 +5,8 @@ try{
  const response=await fetch('./firebase-connect.json?session='+encodeURIComponent(session),{cache:'no-store'});if(!response.ok)throw Error('設定情報を読み込めませんでした。');metadata=await response.json();
  const url=new URL(metadata.authUrl);if(url.origin!=='https://auth.firebase.tools'||url.pathname!=='/login')throw Error('認証先を確認できませんでした。');
  if(Date.now()>Date.parse(metadata.expiresAt))throw Error('この入力画面は期限切れです。チャットで新しい画面を依頼してください。');
- $('loginLink').href=url.href;$('loginLink').removeAttribute('aria-disabled');$('loginLink').onclick=()=>{$('authCode').disabled=false;$('encryptButton').disabled=false;$('status').textContent='このリンクの認証画面で、新しく取得したコードを貼り付けてください。'};
+ $('loginLink').href=url.href;$('loginLink').removeAttribute('aria-disabled');$('encryptButton').disabled=false;
+ $('loginLink').onclick=()=>{$('status').textContent='認証後、この画面に戻ってコードを貼り付けてください。入力欄はそのまま使えます。'};
  $('expiry').textContent='入力画面の有効期限：'+new Date(metadata.expiresAt).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'})+'（日本時間）';
 }catch(error){$('status').textContent=error.message}
 $('codeForm').onsubmit=async event=>{
