@@ -12,6 +12,54 @@
     "sourceRow": 9
   },
   {
+    "id": "p22",
+    "name": "文理 / 文理市販 / 文理Gakken",
+    "lead": 2,
+    "direct": true,
+    "warehouse": true,
+    "cutoff": 16,
+    "lateExtra": 0,
+    "condition": "7冊以上 / 北海道・東北・関東のみ",
+    "note": "KEC 全て直送",
+    "sourceRow": 22
+  },
+  {
+    "id": "p23",
+    "name": "好学",
+    "lead": 2,
+    "direct": true,
+    "warehouse": true,
+    "cutoff": 16,
+    "lateExtra": 0,
+    "condition": "8冊以上 / 北海道・東北・関東・中部のみ",
+    "note": "",
+    "sourceRow": 23
+  },
+  {
+    "id": "p21",
+    "name": "学書",
+    "lead": 1,
+    "direct": true,
+    "warehouse": true,
+    "cutoff": 16,
+    "lateExtra": 0,
+    "condition": "14冊以上",
+    "note": "旧版は納期1週間\n着日指定のないものは+1営業日以降の出荷",
+    "sourceRow": 21
+  },
+  {
+    "id": "p25",
+    "name": "学友社",
+    "lead": 1,
+    "direct": true,
+    "warehouse": true,
+    "cutoff": 16,
+    "lateExtra": 0,
+    "condition": "30冊以上",
+    "note": "",
+    "sourceRow": 25
+  },
+  {
     "id": "p10",
     "name": "森の実",
     "lead": 2,
@@ -46,54 +94,6 @@
     "condition": "全て直送（代引のみ宅送）",
     "note": "日時指定不可",
     "sourceRow": 12
-  },
-  {
-    "id": "p21",
-    "name": "学書",
-    "lead": 1,
-    "direct": true,
-    "warehouse": true,
-    "cutoff": 16,
-    "lateExtra": 0,
-    "condition": "14冊以上",
-    "note": "旧版は納期1週間\n着日指定のないものは+1営業日以降の出荷",
-    "sourceRow": 21
-  },
-  {
-    "id": "p22",
-    "name": "文理 / 文理市販 / 文理Gakken",
-    "lead": 2,
-    "direct": true,
-    "warehouse": true,
-    "cutoff": 16,
-    "lateExtra": 0,
-    "condition": "7冊以上 / 北海道・東北・関東のみ",
-    "note": "KEC 全て直送",
-    "sourceRow": 22
-  },
-  {
-    "id": "p23",
-    "name": "好学",
-    "lead": 2,
-    "direct": true,
-    "warehouse": true,
-    "cutoff": 16,
-    "lateExtra": 0,
-    "condition": "8冊以上 / 北海道・東北・関東・中部のみ",
-    "note": "",
-    "sourceRow": 23
-  },
-  {
-    "id": "p25",
-    "name": "学友社",
-    "lead": 1,
-    "direct": true,
-    "warehouse": true,
-    "cutoff": 16,
-    "lateExtra": 0,
-    "condition": "30冊以上",
-    "note": "",
-    "sourceRow": 25
   },
   {
     "id": "p26",
