@@ -1,0 +1,99 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Data model: private/bootstrap holds ownerEmail (server-only, never client-readable).
+    // access/{uid}: uid, role(owner/editor), createdAt/By, updatedAt/By, revision.
+    // settings/general: nextDayMode, imported, and the same metadata.
+    // publishers/{publisherId}: lead(1..60), cutoff(14/16), and metadata.
+    // adjustments/{id}: id, target, kind, startAt/endAt (UTC date timestamps),
+    // reason(1..80 chars), extra(0 for closed, 1..60 for delay), and metadata.
+    // createdAt/createdBy and document identity are immutable. No email/profile data
+    // is exposed in shared records. All unspecified paths are denied.
+    function signedIn() {
+      return request.auth != null && request.auth.uid is string &&
+        request.auth.uid.size() > 0 && request.auth.uid.size() <= 128 &&
+        request.auth.token.email_verified == true;
+    }
+    function isOwner() {
+      return signedIn() && exists(/databases/$(database)/documents/private/bootstrap) &&
+        request.auth.token.email == get(/databases/$(database)/documents/private/bootstrap).data.ownerEmail;
+    }
+    function isMember() {
+      return isOwner() || (signedIn() &&
+        exists(/databases/$(database)/documents/access/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/access/$(request.auth.uid)).data.role == 'editor');
+    }
+    function validUid(uid) { return uid is string && uid.size() > 0 && uid.size() <= 128; }
+    function knownPublisher(id) { return id in ["p9", "p22", "p23", "p21", "p25", "p10", "p11", "p12", "p26", "p27", "p28", "p29", "p30", "p31", "p32", "p33", "p34", "p35", "p36", "p37", "p38", "p39", "p41", "p42", "p43", "p44", "p45", "p46", "p47", "p48", "p49", "p50", "p51", "p52", "p53", "p54", "p55"]; }
+    function validMeta(data) {
+      return data.createdAt is timestamp && validUid(data.createdBy) &&
+        data.updatedAt == request.time && data.updatedBy == request.auth.uid &&
+        data.revision is int && data.revision >= 1 && data.revision <= 1000000000;
+    }
+    function validCreateMeta(data) {
+      return data.createdAt == request.time && data.createdBy == request.auth.uid && data.revision == 1;
+    }
+    function validUpdateMeta(data) {
+      return data.createdAt == resource.data.createdAt && data.createdBy == resource.data.createdBy &&
+        data.revision == resource.data.revision + 1;
+    }
+    function validAccess(data, uid) {
+      return data.keys().hasAll(['uid','role','createdAt','createdBy','updatedAt','updatedBy','revision']) &&
+        data.keys().hasOnly(['uid','role','createdAt','createdBy','updatedAt','updatedBy','revision']) &&
+        validMeta(data) && validUid(data.uid) && data.uid == uid &&
+        ((uid == request.auth.uid && data.role == 'owner') || (uid != request.auth.uid && data.role == 'editor'));
+    }
+    function validGeneral(data) {
+      return data.keys().hasAll(['nextDayMode','imported','createdAt','createdBy','updatedAt','updatedBy','revision']) &&
+        data.keys().hasOnly(['nextDayMode','imported','createdAt','createdBy','updatedAt','updatedBy','revision']) &&
+        validMeta(data) && data.nextDayMode is bool && data.imported is bool;
+    }
+    function validPublisher(data, id) {
+      return knownPublisher(id) &&
+        data.keys().hasAll(['lead','cutoff','createdAt','createdBy','updatedAt','updatedBy','revision']) &&
+        data.keys().hasOnly(['lead','cutoff','createdAt','createdBy','updatedAt','updatedBy','revision']) &&
+        validMeta(data) && data.lead is int && data.lead >= 1 && data.lead <= 60 && data.cutoff is int && data.cutoff in [14,16];
+    }
+    function validAdjustment(data, id) {
+      return data.keys().hasAll(['id','target','kind','startAt','endAt','reason','extra','createdAt','createdBy','updatedAt','updatedBy','revision']) &&
+        data.keys().hasOnly(['id','target','kind','startAt','endAt','reason','extra','createdAt','createdBy','updatedAt','updatedBy','revision']) &&
+        validMeta(data) && data.id is string && data.id.size() > 0 && data.id.size() <= 80 &&
+        data.id == id && data.id.matches('^[A-Za-z0-9_-]+$') &&
+        (data.target == 'self' || knownPublisher(data.target)) && data.kind in ['closed','delay'] &&
+        data.startAt is timestamp && data.endAt is timestamp &&
+        data.startAt == data.startAt.date() && data.endAt == data.endAt.date() &&
+        data.startAt >= timestamp.date(2025,1,1) && data.endAt <= timestamp.date(2030,12,31) &&
+        data.endAt >= data.startAt && data.endAt - data.startAt <= duration.value(366,'d') &&
+        data.reason is string && data.reason.size() > 0 && data.reason.size() <= 80 && data.extra is int &&
+        ((data.kind == 'closed' && data.extra == 0) ||
+         (data.kind == 'delay' && data.target != 'self' && data.extra >= 1 && data.extra <= 60));
+    }
+    match /access/{uid} {
+      allow read: if isOwner() || (signedIn() && request.auth.uid == uid);
+      allow create: if isOwner() && validAccess(request.resource.data,uid) && validCreateMeta(request.resource.data);
+      allow update: if isOwner() && validAccess(request.resource.data,uid) && validUpdateMeta(request.resource.data);
+      allow delete: if isOwner() && request.auth.uid != uid;
+    }
+    match /settings/general {
+      allow read: if isMember();
+      allow create: if isOwner() && validGeneral(request.resource.data) && validCreateMeta(request.resource.data);
+      allow update: if isMember() && validGeneral(request.resource.data) && validUpdateMeta(request.resource.data) &&
+        (request.resource.data.imported == resource.data.imported ||
+         (isOwner() && resource.data.imported == false && request.resource.data.imported == true));
+      allow delete: if false;
+    }
+    match /publishers/{id} {
+      allow read: if isMember();
+      allow create: if isMember() && validPublisher(request.resource.data,id) && validCreateMeta(request.resource.data);
+      allow update: if isMember() && validPublisher(request.resource.data,id) && validUpdateMeta(request.resource.data);
+      allow delete: if isOwner();
+    }
+    match /adjustments/{id} {
+      allow read: if isMember();
+      allow create: if isMember() && validAdjustment(request.resource.data,id) && validCreateMeta(request.resource.data);
+      allow update: if isMember() && validAdjustment(request.resource.data,id) && validUpdateMeta(request.resource.data);
+      allow delete: if isMember();
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

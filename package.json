@@ -3,6 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "description": "メーカーと自社物流の休業日を反映する宅・直納期早見表",
-  "engines": {"node": ">=24"},
-  "scripts": {"test": "node verify.mjs && node verify-ui.cjs"}
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node verify.mjs && node verify-ui.cjs",
+    "firebase:plan": "node scripts/setup-firebase.mjs --plan",
+    "firebase:setup": "node scripts/setup-firebase.mjs",
+    "test:firebase": "npx -y firebase-tools@latest emulators:exec --project demo-shipping-guide --config firebase/firebase.json --only firestore \"node --test --test-concurrency=1 firebase/rules.test.mjs firebase/shared-store.test.mjs\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.2.0",
+    "firebase-tools": "^15.35.0"
+  }
 }
