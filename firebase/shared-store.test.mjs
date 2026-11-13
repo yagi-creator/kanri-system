@@ -8,16 +8,17 @@ let env;const running=[];sdk.setLogLevel('silent');
 const waitFor=async check=>{const deadline=Date.now()+8000;while(Date.now()<deadline){if(check())return;await new Promise(resolve=>setTimeout(resolve,30))}throw Error('Timed out waiting for shared state')};
 before(async()=>{env=await initializeTestEnvironment({projectId:'demo-shipping-guide',firestore:{host:'127.0.0.1',port:8085,rules:fs.readFileSync(new URL('./firestore.rules',import.meta.url),'utf8')}});await env.clearFirestore();await env.withSecurityRulesDisabled(context=>sdk.setDoc(sdk.doc(context.firestore(),'private','bootstrap'),{ownerEmail:'owner@example.test'}))});
 after(async()=>{running.forEach(client=>client.store.stop());await env?.cleanup()});
-function client(uid){const user={uid,emailVerified:true,displayName:uid};const context=env.authenticatedContext(uid,{email:uid+'@example.test',email_verified:true});const result={state:null,data:null};const clientSdk={...sdk,onAuthStateChanged:(_auth,callback)=>{queueMicrotask(()=>callback(user));return ()=>{}}};result.store=new SharedStore({db:context.firestore(),auth:{currentUser:user},sdk:clientSdk,onState:state=>{result.state=state},onData:data=>{result.data=data}}).start();running.push(result);return result}
+function client(uid){const user=uid?{uid,emailVerified:true,displayName:uid}:null;const context=uid?env.authenticatedContext(uid,{email:uid+'@example.test',email_verified:true}):env.unauthenticatedContext();const result={state:null,data:null};const clientSdk={...sdk,onAuthStateChanged:(_auth,callback)=>{queueMicrotask(()=>callback(user));return ()=>{}}};result.store=new SharedStore({db:context.firestore(),auth:{currentUser:user},sdk:clientSdk,onState:state=>{result.state=state},onData:data=>{result.data=data}}).start();running.push(result);return result}
 test('two editors synchronize settings, detect conflicts, and revoke/regrant access',async()=>{
  const owner=client('owner');await waitFor(()=>owner.state?.state==='connected');assert.equal(owner.state.role,'owner');
+ const viewer=client(null);await waitFor(()=>viewer.data?.general);assert.equal(viewer.state.state,'signed-out');await assert.rejects(viewer.store.setMode(true));
  const editor=client('editor');await waitFor(()=>editor.state?.state==='pending');assert.equal(editor.store.ready,false);
  await owner.store.grant('editor');await waitFor(()=>editor.state?.state==='connected');
  await owner.store.setPublisher('p9',2,14);await waitFor(()=>editor.data?.publishers.some(p=>p.id==='p9'&&p.lead===2));
  const stale=owner.store.revision('publishers/p9');await editor.store.setPublisher('p9',3,16);await waitFor(()=>owner.data?.publishers.some(p=>p.id==='p9'&&p.lead===3));
  await assert.rejects(owner.store.setPublisher('p9',4,14,stale),SharedConflictError);
  assert.equal((await sdk.getDoc(sdk.doc(owner.store.db,'publishers','p9'))).data().lead,3);
- await editor.store.setMode(true);await waitFor(()=>owner.data?.general.nextDayMode===true);
+ await editor.store.setMode(true);await waitFor(()=>owner.data?.general.nextDayMode===true&&viewer.data?.general.nextDayMode===true);
  await owner.store.addEvent({id:'test-shared-event',target:'p9',kind:'closed',start:'2026-11-12',end:'2026-11-13',reason:'棚卸し',extra:1});await waitFor(()=>editor.data?.events.some(e=>e.id==='test-shared-event'));
  assert.equal(editor.data.events[0].extra,0);assert.equal(editor.data.events[0].start,'2026-11-12');
  await editor.store.deleteEvent('test-shared-event');await waitFor(()=>owner.data?.events.length===0);assert.equal(owner.store.revision('adjustments/test-shared-event'),0);
@@ -28,4 +29,22 @@ test('two editors synchronize settings, detect conflicts, and revoke/regrant acc
  await owner.store.importLocal({publishers:[{id:'p10',lead:2,cutoff:14}],events:[{id:'initial-import-event',target:'self',kind:'closed',start:'2026-11-13',end:'2026-11-13',reason:'社内行事',extra:0}],nextDayMode:false});await waitFor(()=>editor.data.general.imported===true&&editor.data.events.length===1);assert.equal(editor.data.general.nextDayMode,false);assert.ok(editor.data.publishers.some(p=>p.id==='p10'));
  await assert.rejects(owner.store.importLocal({publishers:[],events:[],nextDayMode:false}));
 
+});
+test('publisher notes persist on restart, stay isolated, and retain conflicts across delete and recreate',async()=>{
+ const owner=client('owner');await waitFor(()=>owner.state?.state==='connected');
+ const originalPublishers=(await sdk.getDocs(sdk.collection(owner.store.db,'publishers'))).docs.map(d=>({id:d.id,...d.data()}));
+ const originalAdjustments=(await sdk.getDocs(sdk.collection(owner.store.db,'adjustments'))).docs.map(d=>({id:d.id,...d.data()}));
+ const originalSettings=(await sdk.getDoc(sdk.doc(owner.store.db,'settings','general'))).data();
+ await owner.store.setNote('p9','EN','注意事項\n改行を保持');await waitFor(()=>owner.data.notes.some(n=>n.id==='p9'&&n.text.includes('改行')));
+ const reopened=client('owner');await waitFor(()=>reopened.data?.notes.some(n=>n.id==='p9'));assert.equal(reopened.data.notes.find(n=>n.id==='p9').text,'注意事項\n改行を保持');
+ const stale=owner.store.revision('publisherNotes/p9');
+ await reopened.store.setNote('p9','EN','編集後');await waitFor(()=>owner.data.notes.some(n=>n.id==='p9'&&n.text==='編集後'));
+ await assert.rejects(owner.store.setNote('p9','EN','古い編集',stale),SharedConflictError);
+ await owner.store.setNote('p22','文理','別の出版社');await waitFor(()=>reopened.data.notes.some(n=>n.id==='p22'));
+ await owner.store.setNote('p9','EN','');await waitFor(()=>reopened.data.notes.some(n=>n.id==='p9'&&n.text===''));
+ const afterDelete=client('owner');await waitFor(()=>afterDelete.data?.notes.some(n=>n.id==='p9'));assert.equal(afterDelete.data.notes.find(n=>n.id==='p9').text,'');assert.equal(afterDelete.data.notes.find(n=>n.id==='p22').text,'別の出版社');
+ await assert.rejects(afterDelete.store.setNote('p9','EN','古い版で再登録',stale),SharedConflictError);
+ assert.deepEqual((await sdk.getDocs(sdk.collection(owner.store.db,'publishers'))).docs.map(d=>({id:d.id,...d.data()})),originalPublishers);
+ assert.deepEqual((await sdk.getDocs(sdk.collection(owner.store.db,'adjustments'))).docs.map(d=>({id:d.id,...d.data()})),originalAdjustments);
+ assert.deepEqual((await sdk.getDoc(sdk.doc(owner.store.db,'settings','general'))).data(),originalSettings);
 });

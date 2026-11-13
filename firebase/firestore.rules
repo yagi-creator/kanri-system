@@ -5,10 +5,13 @@ service cloud.firestore {
     // access/{uid}: uid, role(owner/editor), createdAt/By, updatedAt/By, revision.
     // settings/general: nextDayMode, imported, and the same metadata.
     // publishers/{publisherId}: lead(1..60), cutoff(14/16), and metadata.
+    // publisherNotes/{publisherId}: publisherId, publisherName(1..80), text(0..10000), metadata.
+    // An empty text means deleted; the revision remains to detect concurrent edits.
     // adjustments/{id}: id, target, kind, startAt/endAt (UTC date timestamps),
     // reason(1..80 chars), extra(0 for closed, 1..60 for delay), and metadata.
     // createdAt/createdBy and document identity are immutable. No email/profile data
-    // is exposed in shared records. All unspecified paths are denied.
+    // is exposed in shared records. Delivery data is public for unauthenticated viewers.
+    // Access and bootstrap documents remain private. All unspecified paths are denied.
     function signedIn() {
       return request.auth != null && request.auth.uid is string &&
         request.auth.uid.size() > 0 && request.auth.uid.size() <= 128 &&
@@ -54,6 +57,12 @@ service cloud.firestore {
         data.keys().hasOnly(['lead','cutoff','createdAt','createdBy','updatedAt','updatedBy','revision']) &&
         validMeta(data) && data.lead is int && data.lead >= 1 && data.lead <= 60 && data.cutoff is int && data.cutoff in [14,16];
     }
+    function validNote(data,id) {
+      return knownPublisher(id) && data.keys().hasAll(['publisherId','publisherName','text','createdAt','createdBy','updatedAt','updatedBy','revision']) &&
+        data.keys().hasOnly(['publisherId','publisherName','text','createdAt','createdBy','updatedAt','updatedBy','revision']) &&
+        validMeta(data) && data.publisherId == id && data.publisherName is string &&
+        data.publisherName.size() > 0 && data.publisherName.size() <= 80 && data.text is string && data.text.size() <= 10000;
+    }
     function validAdjustment(data, id) {
       return data.keys().hasAll(['id','target','kind','startAt','endAt','reason','extra','createdAt','createdBy','updatedAt','updatedBy','revision']) &&
         data.keys().hasOnly(['id','target','kind','startAt','endAt','reason','extra','createdAt','createdBy','updatedAt','updatedBy','revision']) &&
@@ -75,7 +84,7 @@ service cloud.firestore {
       allow delete: if isOwner() && request.auth.uid != uid;
     }
     match /settings/general {
-      allow read: if isMember();
+      allow read: if true;
       allow create: if isOwner() && validGeneral(request.resource.data) && validCreateMeta(request.resource.data);
       allow update: if isMember() && validGeneral(request.resource.data) && validUpdateMeta(request.resource.data) &&
         (request.resource.data.imported == resource.data.imported ||
@@ -83,13 +92,20 @@ service cloud.firestore {
       allow delete: if false;
     }
     match /publishers/{id} {
-      allow read: if isMember();
+      allow read: if true;
       allow create: if isMember() && validPublisher(request.resource.data,id) && validCreateMeta(request.resource.data);
       allow update: if isMember() && validPublisher(request.resource.data,id) && validUpdateMeta(request.resource.data);
       allow delete: if isOwner();
     }
+    match /publisherNotes/{id} {
+      allow read: if true;
+      allow create: if isMember() && validNote(request.resource.data,id) && validCreateMeta(request.resource.data);
+      allow update: if isMember() && validNote(request.resource.data,id) && validUpdateMeta(request.resource.data) &&
+        request.resource.data.publisherId == resource.data.publisherId;
+      allow delete: if false;
+    }
     match /adjustments/{id} {
-      allow read: if isMember();
+      allow read: if true;
       allow create: if isMember() && validAdjustment(request.resource.data,id) && validCreateMeta(request.resource.data);
       allow update: if isMember() && validAdjustment(request.resource.data,id) && validUpdateMeta(request.resource.data);
       allow delete: if isMember();

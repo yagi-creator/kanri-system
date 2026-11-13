@@ -10,7 +10,8 @@
     "test": "node verify.mjs && node verify-ui.cjs",
     "firebase:plan": "node scripts/setup-firebase.mjs --plan",
     "firebase:setup": "node scripts/setup-firebase.mjs",
-    "test:firebase": "npx -y firebase-tools@latest emulators:exec --project demo-shipping-guide --config firebase/firebase.json --only firestore \"node --test --test-concurrency=1 firebase/rules.test.mjs firebase/shared-store.test.mjs\""
+    "test:firebase": "npx -y firebase-tools@latest emulators:exec --project demo-shipping-guide --config firebase/firebase.json --only firestore \"node --test --test-concurrency=1 firebase/rules.test.mjs firebase/shared-store.test.mjs\"",
+    "test:notes": "node verify-notes.cjs"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^6.0.0",

@@ -9,5 +9,9 @@ export default {
     "projectNumber": "337213677647",
     "version": "2"
   },
-  "databaseId": "shipping-shared"
+  "databaseId": "shipping-shared",
+  "editorLogin": {
+    "id": "adminCK",
+    "email": "adminck@noki-shared-84f1fecc6d.firebaseapp.com"
+  }
 };

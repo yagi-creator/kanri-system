@@ -13,8 +13,14 @@ const adjustment=id=>({id:'event-1',target:'p9',kind:'closed',startAt:Timestamp.
 before(async()=>{env=await initializeTestEnvironment({projectId:'demo-shipping-guide',firestore:{host:'127.0.0.1',port:8085,rules:fs.readFileSync(new URL('./firestore.rules',import.meta.url),'utf8')}})});
 after(async()=>{await env?.cleanup()});
 beforeEach(async()=>{await env.clearFirestore();await env.withSecurityRulesDisabled(async context=>{const db=context.firestore();await setDoc(doc(db,'private','bootstrap'),{ownerEmail});await setDoc(doc(db,'access','editor'),{uid:'editor',role:'editor',...meta('owner')})})});
-test('anonymous, unapproved and unverified users cannot read shared data',async()=>{
- for(const db of [env.unauthenticatedContext().firestore(),actor('outsider'),actor('owner',ownerEmail,false)]){await assertFails(getDoc(doc(db,'settings','general')));await assertFails(getDocs(collection(db,'adjustments')))}
+test('viewers can read delivery data, but cannot write or read private access data',async()=>{
+ const root=actor(uid,ownerEmail);await setDoc(doc(root,'settings','general'),general(uid));
+ for(const db of [env.unauthenticatedContext().firestore(),actor('outsider'),actor('owner',ownerEmail,false)]){
+  await assertSucceeds(getDoc(doc(db,'settings','general')));await assertSucceeds(getDocs(collection(db,'adjustments')));await assertSucceeds(getDocs(collection(db,'publishers')));
+  await assertFails(setDoc(doc(db,'publishers','p9'),publisher('outsider')));
+  await assertFails(updateDoc(doc(db,'settings','general'),{nextDayMode:true,revision:2,updatedAt:serverTimestamp(),updatedBy:'outsider'}));
+  await assertFails(getDoc(doc(db,'private','bootstrap')));await assertFails(getDocs(collection(db,'access')));
+ }
  await assertSucceeds(getDoc(doc(actor('outsider'),'access','outsider')));
  await assertFails(getDoc(doc(actor('outsider'),'access','editor')));
 });
@@ -66,5 +72,19 @@ test('private bootstrap and arbitrary user documents are never client-readable',
 });
 test('revoking membership removes shared access immediately',async()=>{
  const root=actor(uid,ownerEmail),db=actor('editor');await setDoc(doc(root,'settings','general'),general(uid));await assertSucceeds(getDoc(doc(db,'settings','general')));
- await deleteDoc(doc(root,'access','editor'));await assertFails(getDoc(doc(db,'settings','general')));await assertFails(setDoc(doc(db,'publishers','p9'),publisher('editor')));
+ await deleteDoc(doc(root,'access','editor'));await assertSucceeds(getDoc(doc(db,'settings','general')));await assertFails(setDoc(doc(db,'publishers','p9'),publisher('editor')));
+});
+test('publisher notes allow public reading and validated editor writes without changing publisher records',async()=>{
+ const db=actor('editor'),ref=doc(db,'publisherNotes','p9');
+ const note={publisherId:'p9',publisherName:'EN',text:'棚卸し\n発送前に確認',...meta('editor')};
+ await assertSucceeds(setDoc(ref,note));
+ assert.equal((await assertSucceeds(getDoc(doc(env.unauthenticatedContext().firestore(),'publisherNotes','p9')))).data().text,note.text);
+ await assertSucceeds(updateDoc(ref,{text:'更新後',revision:2,updatedAt:serverTimestamp(),updatedBy:'editor'}));
+ for(const bad of [{text:'x'.repeat(10001)},{text:12},{publisherId:'p22'},{publisherName:''},{publisherName:'x'.repeat(81)},{createdBy:'other'},{revision:1},{extra:true}])await assertFails(updateDoc(ref,{revision:3,updatedAt:serverTimestamp(),updatedBy:'editor',...bad}));
+ await assertFails(setDoc(doc(db,'publisherNotes','unknown'),{...note,publisherId:'unknown'}));
+ await assertFails(updateDoc(doc(actor('outsider'),'publisherNotes','p9'),{text:'attack',revision:3,updatedAt:serverTimestamp(),updatedBy:'outsider'}));
+ await assertFails(updateDoc(doc(env.unauthenticatedContext().firestore(),'publisherNotes','p9'),{text:'attack'}));
+ await assertSucceeds(updateDoc(ref,{text:'',revision:3,updatedAt:serverTimestamp(),updatedBy:'editor'}));
+ assert.equal((await getDoc(ref)).data().text,'');
+ await assertFails(deleteDoc(ref));
 });
